@@ -15,10 +15,18 @@ $config = [
 		    'admins' => ['admin'],
 		    'modelMap' => [
 			    'User' => 'app\models\User',
+			    'Profile' => 'app\models\Profile',
 		    ],
 	    ],
     ],
     'components' => [
+	    'view' => [
+		    'theme' => [
+			    'pathMap' => [
+				    '@dektrium/user/views' => '@app/views/user'
+			    ],
+		    ],
+	    ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'FOKv4eLGP1g6_rs2inVhHL-MubUPSoMO',

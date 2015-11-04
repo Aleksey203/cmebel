@@ -36,9 +36,11 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
-            ['label' => 'Пользователи', 'url' => ['/user/admin/index']],
+	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ?
+		        ['label' => 'Пользователи', 'url' => ['/user/admin/index']] :
+		        '',
             Yii::$app->user->isGuest ?
-                ['label' => 'Войти', 'url' => ['/site/login']] :
+                '' :
                 [
                     'label' => 'Выйти (' . Yii::$app->user->identity->username . ')',
                     'url' => ['/site/logout'],
