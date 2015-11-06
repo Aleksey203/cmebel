@@ -4,6 +4,7 @@ Yii::setAlias('@tests', dirname(__DIR__) . '/tests');
 
 $params = require(__DIR__ . '/params.php');
 $db = require(__DIR__ . '/db.php');
+$dbOpencart = require(__DIR__ . '/dbOpencart.php');
 
 return [
     'id' => 'basic-console',
@@ -26,6 +27,7 @@ return [
             ],
         ],
         'db' => $db,
+        'dbOpencart' => $dbOpencart,
     ],
     'params' => $params,
 ];
