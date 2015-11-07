@@ -23,8 +23,6 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'parent_id') ?>
 
-    <?= $form->field($model, 'sort_order') ?>
-
     <?php // echo $form->field($model, 'status') ?>
 
     <div class="form-group">

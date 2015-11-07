@@ -7,7 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model app\models\ShopCategories */
 
 $this->title = $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Shop Categories', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Категории', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="shop-categories-view">
@@ -15,11 +15,11 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Delete', ['delete', 'id' => $model->id], [
+        <?= Html::a('Редактировать', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Удалить', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
+                'confirm' => 'Вы уверены, что хотите удалить эту категорию?',
                 'method' => 'post',
             ],
         ]) ?>
@@ -29,11 +29,16 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'id',
-            'opencart_id',
+            //'opencart_id',
             'name',
-            'parent_id',
-            'sort_order',
-            'status',
+	        [
+		        'attribute' => 'parent_id',
+		        'value' => $model->getParentCategory($model['parent_id']),
+	        ],
+	        [
+		        'attribute' => 'status',
+		        'value' => $model['status']==1 ? 'активен' : 'выключен'
+	        ],
         ],
     ]) ?>
 

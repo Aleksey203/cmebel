@@ -11,7 +11,6 @@ use Yii;
  * @property string $opencart_id
  * @property string $name
  * @property string $parent_id
- * @property string $sort_order
  * @property integer $status
  */
 class ShopCategories extends \yii\db\ActiveRecord
@@ -30,8 +29,8 @@ class ShopCategories extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['opencart_id', 'parent_id', 'sort_order', 'status'], 'integer'],
-            [['name','parent_id', 'sort_order', 'status'], 'required'],
+            [['opencart_id', 'parent_id', 'status'], 'integer'],
+            [['name','parent_id', 'status'], 'required'],
             [['name'], 'string', 'max' => 255]
         ];
     }
@@ -45,9 +44,15 @@ class ShopCategories extends \yii\db\ActiveRecord
             'id' => 'ID',
             'opencart_id' => 'ID из интернет-магазина',
             'name' => 'название',
-            'parent_id' => 'id родительской категории',
-            'sort_order' => 'сортировка внутри родительской категории',
+            'parent_id' => 'родительская категория',
             'status' => 'статус',
         ];
     }
+
+	public function getParentCategory($parentId)
+	{
+		$parent = ShopCategories::find()->where(['id' => $parentId])->one();
+		return  $parent['name'];
+	}
+
 }

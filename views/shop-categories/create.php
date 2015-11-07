@@ -2,15 +2,15 @@
 
 use yii\helpers\Html;
 
+
 /* @var $this yii\web\View */
 /* @var $model app\models\ShopCategories */
 
-$this->title = 'Редактировать категорию: ' . ' ' . $model->name;
+$this->title = 'Создать категорию';
 $this->params['breadcrumbs'][] = ['label' => 'Категории', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Редактировать';
+$this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="shop-categories-update">
+<div class="shop-categories-create">
 
     <h1><?= Html::encode($this->title) ?></h1>
 

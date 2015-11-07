@@ -18,7 +18,7 @@ class ShopCategoriesSearch extends ShopCategories
     public function rules()
     {
         return [
-            [['id', 'opencart_id', 'parent_id', 'sort_order', 'status'], 'integer'],
+            [['id', 'opencart_id', 'parent_id', 'status'], 'integer'],
             [['name'], 'safe'],
         ];
     }
@@ -59,7 +59,6 @@ class ShopCategoriesSearch extends ShopCategories
             'id' => $this->id,
             'opencart_id' => $this->opencart_id,
             'parent_id' => $this->parent_id,
-            'sort_order' => $this->sort_order,
             'status' => $this->status,
         ]);
 
