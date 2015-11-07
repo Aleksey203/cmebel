@@ -37,6 +37,10 @@ AppAsset::register($this);
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
 	        (!Yii::$app->user->isGuest AND !Yii::$app->user->identity->getIsAdmin()) ? '' :
+		        ['label' => 'Категории', 'url' => ['/shop-categories/index']],
+	        (!Yii::$app->user->isGuest AND !Yii::$app->user->identity->getIsAdmin()) ? '' :
+		        ['label' => 'Товары', 'url' => ['/shop-products/index']],
+	        (!Yii::$app->user->isGuest AND !Yii::$app->user->identity->getIsAdmin()) ? '' :
 		        ['label' => 'Клиенты', 'url' => ['/clients/index']],
 	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ?
 		        ['label' => 'Пользователи', 'url' => ['/user/admin/index']] :
