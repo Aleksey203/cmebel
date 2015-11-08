@@ -63,4 +63,10 @@ class ShopProducts extends \yii\db\ActiveRecord
             'date_modified' => 'дата редактирования',
         ];
     }
+
+	public function getCategoryName($categoryId)
+	{
+		$category = ShopCategories::find()->where(['id' => $categoryId])->one();
+		return  $category['name'];
+	}
 }
