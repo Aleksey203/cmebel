@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "55fea58bc6924ef1210b4aab51e8af7d",
-    "content-hash": "5718b991617028a1d87e4dcfa7a9c1ca",
+    "hash": "0e1e1297e8ef2a2738931bc35b2a37ce",
+    "content-hash": "d8e98a1c67abe27764f8547797a11aa1",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -54,6 +54,51 @@
                 "mobile-first",
                 "responsive",
                 "web"
+            ]
+        },
+        {
+            "name": "bower-asset/bootstrap-treeview",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jonmiles/bootstrap-treeview.git",
+                "reference": "542f57eab636e14417216e95fa7f7049bbf3d69f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jonmiles/bootstrap-treeview/zipball/542f57eab636e14417216e95fa7f7049bbf3d69f",
+                "reference": "542f57eab636e14417216e95fa7f7049bbf3d69f",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/bootstrap": ">=3.0.0",
+                "bower-asset/jquery": ">=1.9.0"
+            },
+            "type": "bower-asset-library",
+            "extra": {
+                "bower-asset-main": [
+                    "dist/bootstrap-treeview.min.js",
+                    "dist/bootstrap-treeview.min.css"
+                ],
+                "bower-asset-ignore": [
+                    "**/.*",
+                    "node_modules",
+                    "bower_components",
+                    "test",
+                    "tests"
+                ]
+            },
+            "description": "Tree View for Twitter Bootstrap",
+            "keywords": [
+                "bootstrap",
+                "javascript",
+                "jquery",
+                "jquery-plugin",
+                "navigation",
+                "tree",
+                "tree-view",
+                "treeview",
+                "twitter"
             ]
         },
         {
@@ -360,6 +405,53 @@
                 "yii2-user"
             ],
             "time": "2015-09-27 14:49:11"
+        },
+        {
+            "name": "execut/yii2-widget-bootstraptreeview",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/execut/yii2-widget-bootstraptreeview.git",
+                "reference": "a1b118fdaf356cb2ba9342002e3ccd7b4e418122"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/execut/yii2-widget-bootstraptreeview/zipball/a1b118fdaf356cb2ba9342002e3ccd7b4e418122",
+                "reference": "a1b118fdaf356cb2ba9342002e3ccd7b4e418122",
+                "shasum": ""
+            },
+            "require": {
+                "bower-asset/bootstrap-treeview": "*",
+                "yiisoft/yii2-jui": "*"
+            },
+            "type": "yii2-extension",
+            "autoload": {
+                "psr-4": {
+                    "execut\\widget\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "eXeCUT"
+                }
+            ],
+            "description": "Bootstrap Tree View widget wrapper for yii2",
+            "homepage": "https://github.com/execut/yii2-widget-bootstraptreeview",
+            "keywords": [
+                "bootstrap",
+                "extension",
+                "form",
+                "input",
+                "jquery",
+                "plugin",
+                "tree",
+                "yii2"
+            ],
+            "time": "2015-10-30 14:43:46"
         },
         {
             "name": "ezyang/htmlpurifier",
@@ -1102,7 +1194,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "dektrium/yii2-user": 20
+        "dektrium/yii2-user": 20,
+        "execut/yii2-widget-bootstraptreeview": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
