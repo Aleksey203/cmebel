@@ -158,6 +158,8 @@ class OpencartController extends Controller
 	        LEFT JOIN oc_product_description pd ON pd.product_id=p.product_id
 	        LEFT JOIN oc_product_to_category pc ON pc.product_id=p.product_id
 	        WHERE pd.language_id=1
+	        GROUP BY p.product_id
+	        ORDER BY pc.category_id
 	        "; //echo $query;
 
 		$shopProductsOpencart = \Yii::$app->dbOpencart->createCommand($query)
@@ -168,7 +170,7 @@ class OpencartController extends Controller
 				if ($product['opencart_id']==$productOpencart['product_id']) unset($shopProductsOpencart[$k]);
 			}
 		}
-
+		$insertedP=0;
 		foreach ($shopProductsOpencart as $k => $productOpencart) {
 			$query = "
 		        SELECT id
@@ -177,6 +179,8 @@ class OpencartController extends Controller
 		        "; //echo $query;
 			$categoryId = \Yii::$app->db->createCommand($query)->queryScalar();
 
+			if (!isset($productOpencart['name']) OR $productOpencart['name']==null OR strlen($productOpencart['name'])>0==false)
+				$productOpencart['name'] = $productOpencart['model'];
 			\Yii::$app->db->createCommand()->insert('shop_products', [
 				'opencart_id' => $productOpencart['product_id'],
 				'name' => $productOpencart['name'],
@@ -189,7 +193,8 @@ class OpencartController extends Controller
 				'image' => $productOpencart['image'],
 				'status' => $productOpencart['status']
 			])->execute();
+			$insertedP++;
 		}
-		echo "\n";
+		echo "Inserted new products: $insertedP\n";
 	}
 }
