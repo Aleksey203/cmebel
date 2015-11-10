@@ -12,11 +12,8 @@ use yii\console\Controller;
 
 class OpencartController extends Controller
 {
-    /**
-     * This command echoes what you have entered as the message.
-     * @param string $message the message to be echoed.
-     */
-    public function actionOrders($message = 'hello world')
+
+    public function actionOrders()
     {
 	    $query = "
 	        SELECT *
@@ -87,7 +84,117 @@ class OpencartController extends Controller
 		    ])->execute();
 	    }
 
-
 	    echo "\n";
     }
+
+	public function actionShop()
+	{
+		$query = "
+	        SELECT opencart_id
+	        FROM shop_categories
+	        "; //echo $query;
+
+		$shopCategories = \Yii::$app->db->createCommand($query)
+			->queryAll();
+
+		$query = "
+	        SELECT c.*, cd.name
+	        FROM oc_category c
+	        LEFT JOIN oc_category_description cd ON cd.category_id=c.category_id
+	        WHERE cd.language_id=1
+	        "; //echo $query;
+
+		$shopCategoriesOpencart = \Yii::$app->dbOpencart->createCommand($query)
+			->queryAll();
+
+		foreach ($shopCategoriesOpencart as $k => $categoryOpencart) {
+			foreach ($shopCategories as $category) {
+				if ($category['opencart_id']==$categoryOpencart['category_id']) unset($shopCategoriesOpencart[$k]);
+			}
+		}
+		/*echo '<pre>';
+		print_r($shopCategoriesOpencart);
+		echo '</pre>';*/
+		$insertedC=0;
+		foreach ($shopCategoriesOpencart as $k => $categoryOpencart) {
+			if (\Yii::$app->db->createCommand()->insert('shop_categories', [
+				'opencart_id' => $categoryOpencart['category_id'],
+				'name' => $categoryOpencart['name'],
+				'parent_id' => $categoryOpencart['parent_id'],
+				'status' => $categoryOpencart['status']
+			])->execute()) $insertedC++;
+			if ($categoryOpencart['parent_id']>0)
+				$insertedCategories[$categoryOpencart['category_id']] = $categoryOpencart['parent_id'];
+		}
+
+		if (isset($insertedCategories)) {
+			foreach ($insertedCategories as $insertedCategory => $parentId) {
+				$query = "
+		        SELECT id
+		        FROM shop_categories
+		        WHERE opencart_id='".intval($parentId)."'
+		        "; //echo $query;
+				$newParentId = \Yii::$app->db->createCommand($query)->queryScalar();
+				\Yii::$app->db->createCommand()
+					->update('shop_categories', ['parent_id' => $newParentId], 'opencart_id ='.$insertedCategory)
+					->execute();
+		    }
+
+		}
+		echo "Inserted new categories: $insertedC\n";
+
+
+		$query = "
+	        SELECT opencart_id
+	        FROM shop_products
+	        "; //echo $query;
+
+		$shopProducts = \Yii::$app->db->createCommand($query)
+			->queryAll();
+
+		$query = "
+	        SELECT p.*, pd.name, pc.category_id
+	        FROM oc_product p
+	        LEFT JOIN oc_product_description pd ON pd.product_id=p.product_id
+	        LEFT JOIN oc_product_to_category pc ON pc.product_id=p.product_id
+	        WHERE pd.language_id=1
+	        GROUP BY p.product_id
+	        ORDER BY pc.category_id
+	        "; //echo $query;
+
+		$shopProductsOpencart = \Yii::$app->dbOpencart->createCommand($query)
+			->queryAll();
+
+		foreach ($shopProductsOpencart as $k => $productOpencart) {
+			foreach ($shopProducts as $product) {
+				if ($product['opencart_id']==$productOpencart['product_id']) unset($shopProductsOpencart[$k]);
+			}
+		}
+		$insertedP=0;
+		foreach ($shopProductsOpencart as $k => $productOpencart) {
+			$query = "
+		        SELECT id
+		        FROM shop_categories
+		        WHERE opencart_id='".intval($productOpencart['category_id'])."'
+		        "; //echo $query;
+			$categoryId = \Yii::$app->db->createCommand($query)->queryScalar();
+
+			if (!isset($productOpencart['name']) OR $productOpencart['name']==null OR strlen($productOpencart['name'])>0==false)
+				$productOpencart['name'] = $productOpencart['model'];
+			\Yii::$app->db->createCommand()->insert('shop_products', [
+				'opencart_id' => $productOpencart['product_id'],
+				'name' => $productOpencart['name'],
+				'model' => $productOpencart['model'],
+				'category_id' => $categoryId,
+				'price' => $productOpencart['price'],
+				'quantity' => $productOpencart['quantity'],
+				'date_added' => $productOpencart['date_added'],
+				'date_modified' => $productOpencart['date_modified'],
+				'image' => $productOpencart['image'],
+				'status' => $productOpencart['status']
+			])->execute();
+			$insertedP++;
+		}
+		echo "Inserted new products: $insertedP\n";
+	}
 }
