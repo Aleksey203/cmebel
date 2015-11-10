@@ -55,4 +55,60 @@ class ShopCategories extends \yii\db\ActiveRecord
 		return  $parent['name'];
 	}
 
+	public static function getCategoryName($categoryId)
+	{
+		$category = ShopCategories::find()->where(['id' => $categoryId])->one();
+		return  $category['name'];
+	}
+
+	public static function getTree()
+	{
+		$items = [
+			[
+				'text' => 'Parent 1',
+				'nodes' => [
+					[
+						'text' => 'Child 1',
+						'nodes' => [
+							[
+								'text' => 'Grandchild 1'
+							],
+							[
+								'text' => 'Grandchild 2'
+							]
+						]
+					],
+					[
+						'text' => 'Child 2',
+					]
+				],
+			],
+			[
+				'text' => 'Parent 2',
+			]
+		];
+		$categories = ShopCategories::find()->asArray()->all();
+
+		$parents = ShopCategories::getChilds($categories,0);
+
+		return $parents;
+		//return $items;
+	}
+
+	public static function getChilds($array,$id)
+	{
+		foreach ($array as $item) {
+			if ($item['parent_id']==$id) $child[] = array('text' => $item['name'], 'href' => '#'.$item['id']);
+		}
+		if (isset($child)) {
+			foreach ($child as $k => $v) {
+				$v['id'] = intval(substr($v['href'],1));
+				if (ShopCategories::getChilds($array,$v['id'])!='')
+					$child[$k]['nodes'] = ShopCategories::getChilds($array,$v['id']);
+				}
+			return $child;
+		}
+		else return '';
+	}
+
 }

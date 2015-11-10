@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\ShopCategories;
 use Yii;
 use app\models\ShopProducts;
 use app\models\ShopProductsSearch;
@@ -115,6 +116,33 @@ class ShopProductsController extends Controller
 
         return $this->redirect(['index']);
     }
+
+	public function actionTree()
+	{
+		if (Yii::$app->request->isAjax) {
+			$data['success'] = false;
+
+			$post = \Yii::$app->request->post();
+			$products = ShopProducts::find()->where('category_id='.$post['category_id'])->all();
+
+			$data['html'] = $this->renderPartial('_products', [
+				'products' => $products,
+			]);
+
+			$data['success'] = true;
+			return json_encode($data);
+		}
+		else {
+			$products = ShopProducts::find()->all();
+
+			$categoriesTree = ShopCategories::getTree();
+
+			return $this->render('tree', [
+				'products' => $products,
+				'categoriesTree' => $categoriesTree,
+			]);
+		}
+	}
 
     /**
      * Finds the ShopProducts model based on its primary key value.

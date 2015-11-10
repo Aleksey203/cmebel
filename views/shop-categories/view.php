@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
 	        [
 		        'attribute' => 'parent_id',
-		        'value' => $model->getParentCategory($model['parent_id']),
+		        'value' => $model->getCategoryName($model['parent_id']),
 	        ],
 	        [
 		        'attribute' => 'status',

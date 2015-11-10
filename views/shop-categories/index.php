@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\grid\GridView;
 use app\models\ShopCategories;
+use yii\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\ShopCategoriesSearch */
@@ -22,7 +23,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        //'filterModel' => $searchModel,
+        'filterModel' => $searchModel,
         'columns' => [
             //['class' => 'yii\grid\SerialColumn'],
 
@@ -31,6 +32,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
 	        [
 		        'attribute' => 'parent_id',
+		        'filter' =>  ArrayHelper::map(ShopCategories::find()->all(), 'id', 'name'),
 		        'value' => function ($data) {
 			        $parent = ShopCategories::find()->where(['id' => $data->parent_id])->one();
 			        return  $parent['name'];
@@ -38,6 +40,7 @@ $this->params['breadcrumbs'][] = $this->title;
 	        ],
 	        [
 		        'attribute' => 'status',
+		        'filter' =>  array( '0'=>'выключен', '1'=>'активен'),
 		        'value' => function ($data) {
 			        $status = ($data->status==1) ? 'активен' : 'выключен';
 			        return  $status;

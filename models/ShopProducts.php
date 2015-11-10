@@ -39,7 +39,7 @@ class ShopProducts extends \yii\db\ActiveRecord
             [['name', 'category_id', 'price', 'quantity', 'date_added', 'date_modified'], 'required'],
             [['price'], 'number'],
             [['date_added', 'date_modified'], 'safe'],
-            [['date_added', 'date_modified'], 'date','format'=>'Y-m-d H:i:s'],
+            //[['date_added', 'date_modified'], 'date','format'=>'Y-m-d H:i:s'],
             [['name', 'model', 'image'], 'string', 'max' => 255]
         ];
     }
@@ -64,9 +64,16 @@ class ShopProducts extends \yii\db\ActiveRecord
         ];
     }
 
-	public function getCategoryName($categoryId)
+	public function beforeSave($insert)
 	{
-		$category = ShopCategories::find()->where(['id' => $categoryId])->one();
-		return  $category['name'];
+		$date = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
+		$this->date_modified = $date;
+
+		if ($insert) {
+			$this->date_added = $date;
+		}
+
+		return parent::beforeSave($insert);
 	}
+
 }

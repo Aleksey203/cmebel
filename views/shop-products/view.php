@@ -34,7 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'model',
 	        [
 		        'attribute' => 'category_id',
-		        'value' => $model->getCategoryName($model['category_id']),
+		        'value' => \app\models\ShopCategories::getCategoryName($model['category_id']),
 	        ],
             'price',
             'quantity',
