@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use app\models\ShopCategories;
 
 /**
  * This is the model class for table "shop_products".
@@ -76,4 +77,8 @@ class ShopProducts extends \yii\db\ActiveRecord
 		return parent::beforeSave($insert);
 	}
 
+	public function getCategory()
+	{
+		return $this->hasOne(ShopCategories::className(), ['id' => 'category_id']);
+	}
 }
