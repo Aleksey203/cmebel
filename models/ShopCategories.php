@@ -30,7 +30,7 @@ class ShopCategories extends \yii\db\ActiveRecord
     {
         return [
             [['opencart_id', 'parent_id', 'status'], 'integer'],
-            [['name','parent_id', 'status'], 'required'],
+            [['name', 'status'], 'required'],
             [['name'], 'string', 'max' => 255]
         ];
     }
@@ -48,6 +48,16 @@ class ShopCategories extends \yii\db\ActiveRecord
             'status' => 'статус',
         ];
     }
+
+	public function beforeSave($insert)
+	{
+
+		if (!isset($this->parent_id) OR $this->parent_id=='') {
+			$this->parent_id = 0;
+		}
+
+		return parent::beforeSave($insert);
+	}
 
 	public function getParentCategory($parentId)
 	{
