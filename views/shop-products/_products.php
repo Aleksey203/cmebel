@@ -7,7 +7,7 @@ if (isset($products[0])) {
 <table class="table table-striped table-bordered">
 	<thead>
 	<tr>
-		<th>ID</th>
+		<th>номер</th>
 		<th>название</th>
 		<th>название модели</th>
 		<th>категория</th>

@@ -41,8 +41,8 @@ class ShopCategories extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'opencart_id' => 'ID из интернет-магазина',
+            'id' => 'номер',
+            'opencart_id' => 'номер из интернет-магазина',
             'name' => 'название',
             'parent_id' => 'родительская категория',
             'status' => 'статус',
