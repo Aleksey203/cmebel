@@ -197,4 +197,32 @@ class OpencartController extends Controller
 		}
 		echo "Inserted new products: $insertedP\n";
 	}
+
+	public function actionStatuses() {
+		$query = "
+	        SELECT order_status_id id, name
+	        FROM oc_order_status
+	        WHERE language_id=1
+	        "; //echo $query;
+
+		$statusesOpencart = \Yii::$app->dbOpencart->createCommand($query)
+			->queryAll();
+		$insertedS=0;
+		foreach ($statusesOpencart as $k => $statusOpencart) {
+			$query = "
+		        SELECT id
+		        FROM order_status
+		        WHERE id='".intval($statusOpencart['id'])."'
+		        "; //echo $query;
+			$statusId = \Yii::$app->db->createCommand($query)->queryScalar();
+			if ($statusId>0===false) {
+				\Yii::$app->db->createCommand()->insert('order_status', [
+					'id' => $statusOpencart['id'],
+					'name' => $statusOpencart['name']
+				])->execute();
+				$insertedS++;
+			}
+		}
+		echo "Inserted new statuses: $insertedS\n";
+	}
 }
