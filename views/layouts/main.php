@@ -36,6 +36,8 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
+	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Заказы', 'url' => ['/orders/index']] :
+		        '',
 	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Категории', 'url' => ['/shop-categories/index']] :
 		        '',
 	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Товары', 'url' => ['/shop-products/index']] :

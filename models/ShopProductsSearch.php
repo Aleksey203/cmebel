@@ -42,7 +42,7 @@ class ShopProductsSearch extends ShopProducts
      */
     public function search($params)
     {
-        $query = ShopProducts::find();
+        $query = ShopProducts::find()->joinWith('client');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -55,6 +55,7 @@ class ShopProductsSearch extends ShopProducts
             // $query->where('0=1');
             return $dataProvider;
         }
+	    $query->andWhere(Orders::tableName() . '.date_added = ');
 
         $query->andFilterWhere([
             'id' => $this->id,

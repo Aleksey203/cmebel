@@ -70,6 +70,11 @@ class Orders extends \yii\db\ActiveRecord
 		return parent::beforeSave($insert);
 	}
 
+	public function getClient()
+	{
+		return $this->hasOne(Clients::className(), ['id' => 'client_id']);
+	}
+
 	public function getStatus()
 	{
 		return $this->hasOne(OrderStatus::className(), ['id' => 'status_id']);
