@@ -65,6 +65,7 @@ class OrdersController extends Controller
 	    ]);*/
 	    //$products = ShopProducts::find()->leftJoin('order_product', 'shop_products.id = order_product.product_id')->where('order_product.order_id = :order_id',[':order_id' => $model->id])->all();
 	    $orderProducts = $model->orderProducts;
+	    $orderFiles = $model->files;
 	    $post=Yii::$app->request->post();
 
         if ($model->load($post) && $model->save()) {
@@ -73,6 +74,7 @@ class OrdersController extends Controller
             return $this->render('update', [
                 'model' => $model,
                 'orderProducts' => $orderProducts,
+                'orderFiles' => $orderFiles,
             ]);
         }
     }
