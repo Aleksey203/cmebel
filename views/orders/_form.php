@@ -13,6 +13,7 @@ use dosamigos\fileupload\FileUploadUI;
 ?>
 
 <div class="orders-form">
+	<?php $form = ActiveForm::begin(); ?>
 	<div class="row">
 		<div class="col-xs-6 col-sm-6">
 			<?= DetailView::widget([
@@ -29,12 +30,12 @@ use dosamigos\fileupload\FileUploadUI;
 			]) ?>
 		</div>
 		<div class="col-xs-6 col-sm-6">
-			<?php $form = ActiveForm::begin(); ?>
+
 
 			<?= $form->field($model, 'status_id')->dropDownList(ArrayHelper::map(OrderStatus::find()->orderBy(['id' => SORT_ASC])->all(), 'id', 'name')) ?>
 
 			<h4>Файлы заказа:</h4>
-			<?= $this->render('_files_form', [
+			<?php  echo $this->render('_files_form', [
 				'orderFiles' => $orderFiles,
 				'model' => $model,
 			]) ?>
