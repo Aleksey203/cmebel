@@ -56,23 +56,47 @@ class OrdersController extends Controller
     {
         $model = $this->findModel($id);
 
-	    $query = new Query;
+	    /*$query = new Query;
 	    $dataProvider = new ActiveDataProvider([
 		    'query' => $query->from('shop_products')->leftJoin('order_product', 'shop_products.id = order_product.product_id')->where('order_product.order_id = :order_id',[':order_id' => $model->id]),
 		    'pagination' => [
 			    'pageSize' => 200,
 		    ],
-	    ]);
+	    ]);*/
+	    //$products = ShopProducts::find()->leftJoin('order_product', 'shop_products.id = order_product.product_id')->where('order_product.order_id = :order_id',[':order_id' => $model->id])->all();
+	    $orderProducts = $model->orderProducts;
+	    $post=Yii::$app->request->post();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load($post) && $model->save()) {
             return $this->redirect(['index']);
         } else {
             return $this->render('update', [
                 'model' => $model,
-                'dataProvider' => $dataProvider,
+                'orderProducts' => $orderProducts,
             ]);
         }
     }
+
+	public function actionAddproduct()
+	{
+		if (Yii::$app->request->isAjax) {
+			$data['success'] = false;
+
+			$get = \Yii::$app->request->get();
+			$product = ShopProducts::findOne($get['product_id']);
+
+			$data['html'] = $this->renderPartial('_add_product', [
+				'get' => $get,
+				'product' => $product,
+			]);
+
+			$data['success'] = true;
+			return json_encode($data);
+		}
+		else {
+			throw new InvalidCallException("Неверный запрос к OrdersController->actionAddproduct()");
+		}
+	}
 
     /**
      * Deletes an existing Orders model.

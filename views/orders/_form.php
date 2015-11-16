@@ -6,6 +6,7 @@ use yii\helpers\ArrayHelper;
 use app\models\OrderStatus;
 use yii\widgets\DetailView;
 use yii\grid\GridView;
+use dosamigos\fileupload\FileUploadUI;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Orders */
@@ -26,8 +27,13 @@ use yii\grid\GridView;
 			'date_modified:datetime',
 		],
 	]) ?>
+	<?php $form = ActiveForm::begin(); ?>
+	<?= $this->render('_products_form', [
+		'orderProducts' => $orderProducts,
+		'model' => $model,
+	]) ?>
 
-	<?= GridView::widget([
+	<?php /* echo GridView::widget([
 		'dataProvider' => $dataProvider,
 		'columns' => [
 			//['class' => 'yii\grid\SerialColumn'],
@@ -44,11 +50,37 @@ use yii\grid\GridView;
 
 			['class' => 'yii\grid\ActionColumn'],
 		],
-	]); ?>
+	]); */?>
 
-    <?php $form = ActiveForm::begin(); ?>
+
 
     <?= $form->field($model, 'status_id')->dropDownList(ArrayHelper::map(OrderStatus::find()->orderBy(['id' => SORT_ASC])->all(), 'id', 'name')) ?>
+
+
+	<?php /*echo FileUploadUI::widget([
+		'model' => $model,
+		'attribute' => 'total',
+		'url' => ['orders/upload', 'id' => $model->id],
+		'gallery' => false,
+		'fieldOptions' => [
+			'accept' => 'image/*'
+		],
+		'clientOptions' => [
+			'maxFileSize' => 2000000
+		],
+		// ...
+		'clientEvents' => [
+			'fileuploaddone' => 'function(e, data) {
+                                    console.log(e);
+                                    console.log(data);
+                                }',
+			'fileuploadfail' => 'function(e, data) {
+                                    console.log(e);
+                                    console.log(data);
+                                }',
+		],
+	]);*/
+	?>
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить в этой версии', ['class' => 'btn btn-success' ]) ?>

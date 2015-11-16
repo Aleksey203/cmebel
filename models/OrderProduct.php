@@ -46,4 +46,9 @@ class OrderProduct extends \yii\db\ActiveRecord
             'quantity' => 'количество',
         ];
     }
+
+	public function getProduct()
+	{
+		return $this->hasOne(ShopProducts::className(), ['id' => 'product_id']);
+	}
 }
