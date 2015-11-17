@@ -3,6 +3,7 @@
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\helpers\ArrayHelper;
+use app\models\ShopCategories;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\ShopProducts */
@@ -17,7 +18,7 @@ use yii\helpers\ArrayHelper;
 
     <?= $form->field($model, 'model')->textInput(['maxlength' => true]) ?>
 
-	<?= $form->field($model, 'category_id')->dropDownList( ArrayHelper::map($model::find()->all(), 'id', 'name')); ?>
+	<?= $form->field($model, 'category_id')->dropDownList( ArrayHelper::map(ShopCategories::find()->orderBy(['parent_id' => SORT_ASC, 'name' => SORT_ASC])->all(), 'id', 'name')); ?>
 
     <?= $form->field($model, 'price')->textInput(['maxlength' => true]) ?>
 

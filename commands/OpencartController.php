@@ -40,6 +40,7 @@ class OpencartController extends Controller
 	    $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
 		    ->queryAll();
 
+	    $newClients = array();
 	    foreach ($ordersOpencart as $k => $orderOpencart) {
 		    foreach ($orders as $order) {
 			    if ($order['order_opencart_id']==$orderOpencart['order_id']) unset($ordersOpencart[$k]);
@@ -81,6 +82,42 @@ class OpencartController extends Controller
 			    'total' => $orderOpencart['total'],
 			    'date_added' => $orderOpencart['date_added'],
 			    'date_modified' => $orderOpencart['date_modified']
+		    ])->execute();
+	    }
+
+	    $query = "
+	        SELECT op.*
+	        FROM oc_order_product op
+	        LEFT JOIN oc_order o ON o.order_id=op.order_id
+	        WHERE TO_DAYS(NOW()) - TO_DAYS(o.date_added) <= 70
+	        "; //echo $query;
+
+	    $ordersProductOpencart = \Yii::$app->dbOpencart->createCommand($query)
+		    ->queryAll();
+
+	    echo '<pre>';
+	    print_r($ordersProductOpencart);
+	    echo '</pre>';
+	    foreach ($ordersProductOpencart as $k => $orderProductOpencart) {
+		    $query = "
+		        SELECT id
+		        FROM orders
+		        WHERE order_opencart_id='".trim($orderProductOpencart['order_id'])."'
+		        AND version=1
+		        "; //echo $query;
+		    $orderId = \Yii::$app->db->createCommand($query)->queryScalar();
+
+		    $query = "
+		        SELECT id
+		        FROM shop_products
+		        WHERE opencart_id='".trim($orderProductOpencart['product_id'])."'
+		        "; //echo $query;
+		    $productId = \Yii::$app->db->createCommand($query)->queryScalar();
+
+		    \Yii::$app->db->createCommand()->insert('order_product', [
+			    'order_id' => intval($orderId),
+			    'product_id' => intval($productId),
+			    'quantity' => $orderProductOpencart['quantity']
 		    ])->execute();
 	    }
 
@@ -196,5 +233,33 @@ class OpencartController extends Controller
 			$insertedP++;
 		}
 		echo "Inserted new products: $insertedP\n";
+	}
+
+	public function actionStatuses() {
+		$query = "
+	        SELECT order_status_id id, name
+	        FROM oc_order_status
+	        WHERE language_id=1
+	        "; //echo $query;
+
+		$statusesOpencart = \Yii::$app->dbOpencart->createCommand($query)
+			->queryAll();
+		$insertedS=0;
+		foreach ($statusesOpencart as $k => $statusOpencart) {
+			$query = "
+		        SELECT id
+		        FROM order_status
+		        WHERE id='".intval($statusOpencart['id'])."'
+		        "; //echo $query;
+			$statusId = \Yii::$app->db->createCommand($query)->queryScalar();
+			if ($statusId>0===false) {
+				\Yii::$app->db->createCommand()->insert('order_status', [
+					'id' => $statusOpencart['id'],
+					'name' => $statusOpencart['name']
+				])->execute();
+				$insertedS++;
+			}
+		}
+		echo "Inserted new statuses: $insertedS\n";
 	}
 }

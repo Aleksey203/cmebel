@@ -1,13 +1,12 @@
 <?php
 /* @var $product app\models\ShopProducts */
 
-use app\models\ShopCategories;
 if (isset($products[0])) {
 ?>
 <table class="table table-striped table-bordered">
 	<thead>
 	<tr>
-		<th>ID</th>
+		<th>номер</th>
 		<th>название</th>
 		<th>название модели</th>
 		<th>категория</th>
@@ -21,7 +20,7 @@ if (isset($products[0])) {
 			<td><?=$product->id;?></td>
 			<td><?=$product->name;?></td>
 			<td><?=$product->model;?></td>
-			<td><?=ShopCategories::getCategoryName($product->category_id);?></td>
+			<td><?=$product->category->name;?></td>
 			<td><?=$product->price;?></td>
 			<td><?=$product->quantity;?></td>
 			<td><?=($product->status==1) ? 'активен' : 'выключен';?></td>

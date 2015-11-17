@@ -16,7 +16,17 @@ use yii\helpers\ArrayHelper;
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'parent_id')->dropDownList(array_merge(array('0' => ' - нет - '), ArrayHelper::map($model::find()->all(), 'id', 'name'))); ?>
+    <?php echo $form->field($model, 'parent_id')->dropDownList(ArrayHelper::map($model::find()
+	                                                    ->orderBy(['parent_id' => SORT_ASC, 'name' => SORT_ASC])->all(),
+													    'id', 'name'),
+													    ['prompt'=>' - нет - ']);?>
+	<?php /*echo Html::dropDownList('ShopCategories[parent_id]',($model->isNewRecord)?'0':($model->parent_id+1),
+									array_merge(
+										['0'=>' - нет - '],
+										ArrayHelper::map($model::find()
+											->orderBy(['parent_id' => SORT_ASC, 'name' => SORT_ASC])->all(),
+											'id', 'name')
+									))*/?>
 
     <?php
     if ($model->isNewRecord) echo Html::checkbox('ShopCategories[status]', true, array('label' => 'статус'));

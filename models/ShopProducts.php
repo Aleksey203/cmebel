@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use app\models\ShopCategories;
 
 /**
  * This is the model class for table "shop_products".
@@ -50,8 +51,8 @@ class ShopProducts extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'opencart_id' => 'ID из интернет-магазина',
+            'id' => 'номер',
+            'opencart_id' => 'номер из интернет-магазина',
             'name' => 'название',
             'model' => 'название модели',
             'category_id' => 'категория',
@@ -76,4 +77,8 @@ class ShopProducts extends \yii\db\ActiveRecord
 		return parent::beforeSave($insert);
 	}
 
+	public function getCategory()
+	{
+		return $this->hasOne(ShopCategories::className(), ['id' => 'category_id']);
+	}
 }

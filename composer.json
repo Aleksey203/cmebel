@@ -19,7 +19,9 @@
         "yiisoft/yii2-bootstrap": "*",
         "yiisoft/yii2-swiftmailer": "*",
         "dektrium/yii2-user": "0.9.*@dev",
-        "execut/yii2-widget-bootstraptreeview": "dev-master"
+        "execut/yii2-widget-bootstraptreeview": "dev-master",
+        "2amigos/yii2-file-upload-widget": "~1.0",
+        "kartik-v/yii2-widget-select2": "@dev"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",
