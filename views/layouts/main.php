@@ -38,6 +38,8 @@ AppAsset::register($this);
         'items' => [
 	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Заказы', 'url' => ['/orders/index']] :
 		        '',
+            (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Задачи', 'url' => ['/tasks/index']] :
+                '',
 	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Категории', 'url' => ['/shop-categories/index']] :
 		        '',
 	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Товары', 'url' => ['/shop-products/index']] :
