@@ -8,6 +8,7 @@ use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
+use app\models\User;
 
 AppAsset::register($this);
 ?>
@@ -35,30 +36,7 @@ AppAsset::register($this);
     ]);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
-        'items' => [
-	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Заказы', 'url' => ['/orders/index']] :
-		        '',
-            (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Задачи', 'url' => ['/tasks/index']] :
-                '',
-	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Категории', 'url' => ['/shop-categories/index']] :
-		        '',
-	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Товары', 'url' => ['/shop-products/index']] :
-		        '',
-	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Номенклатура', 'url' => ['/shop-products/tree']] :
-		        '',
-	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ? ['label' => 'Клиенты', 'url' => ['/clients/index']] :
-		        '',
-	        (!Yii::$app->user->isGuest AND Yii::$app->user->identity->getIsAdmin()) ?
-		        ['label' => 'Пользователи', 'url' => ['/user/admin/index']] :
-		        '',
-            Yii::$app->user->isGuest ?
-                '' :
-                [
-                    'label' => 'Выйти (' . Yii::$app->user->identity->username . ')',
-                    'url' => ['/site/logout'],
-                    'linkOptions' => ['data-method' => 'post']
-                ],
-        ],
+        'items' => User::getMenuItemsByRoleUser(!Yii::$app->user->isGuest ? Yii::$app->user->identity->getIsAdmin() : false,Yii::$app->user->isGuest)
     ]);
     NavBar::end();
     ?>

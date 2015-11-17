@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\TasksSearch */
@@ -19,7 +20,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php  echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
-        <?= Html::a('Создать задачу', ['create'], ['class' => 'btn btn-success']) ?>
+<!--        --><?//= Html::a('Создать задачу', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
     <?= GridView::widget([
@@ -64,7 +65,25 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template'=>'{update}  {delete}',
+                'template'=>'{update}  {viewOrder} ',
+                'buttons' => [
+                    'viewOrder' => function ($url, $model) {
+                            return Html::a('<span class="glyphicon glyphicon-file"></span>', $url, [
+                                'title' => 'Заказ',
+                            ]);
+                    },
+                ],
+                'urlCreator' => function ($action, $model, $key) {
+                        if ($action === 'viewOrder') {
+                            $url = Url::toRoute(['order', 'id' => $model->order_opencart_id]);
+                            return $url;
+                        }
+                        elseif($action === 'update') {
+                            $url = Url::toRoute(['update', 'id' => $model->id]);
+                            return $url;
+                        }
+
+                }
             ],
         ],
     ]); ?>
