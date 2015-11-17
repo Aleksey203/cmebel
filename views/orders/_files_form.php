@@ -1,9 +1,9 @@
 <?php
 use yii\helpers\Html;
-use yii\helpers\ArrayHelper;
-use app\models\OrderFiles;
 use yii\bootstrap\Modal;
-use kartik\select2\Select2;
+use dosamigos\fileupload\FileUpload;
+
+
 /* @var $file app\models\OrderFiles */
 /* @var $orderFile app\models\OrderFiles */
 
@@ -48,8 +48,30 @@ Modal::begin([
 ?>
 <div id="add_file_box" data-order-id="<?=$model->id?>">
 	<?php
-			echo Html::fileInput('file')
+			//echo Html::fileInput('file')
 				?>
+	<?= FileUpload::widget([
+		'model' => $modelFile,
+		'attribute' => 'file',
+		'url' => ['orders/uploadfile', 'id' => $model->id], // your url, this is just for demo purposes,
+		'options' => ['accept' => 'image/*'],
+		'clientOptions' => [
+			'maxFileSize' => 8000000
+		],
+		// Also, you can specify jQuery-File-Upload events
+		// see: https://github.com/blueimp/jQuery-File-Upload/wiki/Options#processing-callback-options
+		'clientEvents' => [
+			'fileuploaddone' => 'function(e, data) {
+                                console.log(123);
+                                console.log(e);
+                                console.log(data);
+                            }',
+			'fileuploadfail' => 'function(e, data) {
+                                console.log(e);
+                                console.log(data);
+                            }',
+		],
+	]);?>
 </div>
 <?php
 echo Html::submitButton('Сохранить файл', ['class' => 'btn btn-success pull-right', 'id'=>'saveOrderFile' ]);

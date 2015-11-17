@@ -3,15 +3,15 @@
 namespace app\controllers;
 
 use app\models\ShopProducts;
-use app\models\ShopProductsSearch;
 use Yii;
 use app\models\Orders;
 use app\models\OrdersSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use yii\data\ActiveDataProvider;
-use yii\db\Query;
+use app\models\UploadForm;
+use yii\web\UploadedFile;
+use yii\base\InvalidCallException;
 
 /**
  * OrdersController implements the CRUD actions for Orders model.
@@ -56,14 +56,6 @@ class OrdersController extends Controller
     {
         $model = $this->findModel($id);
 
-	    /*$query = new Query;
-	    $dataProvider = new ActiveDataProvider([
-		    'query' => $query->from('shop_products')->leftJoin('order_product', 'shop_products.id = order_product.product_id')->where('order_product.order_id = :order_id',[':order_id' => $model->id]),
-		    'pagination' => [
-			    'pageSize' => 200,
-		    ],
-	    ]);*/
-	    //$products = ShopProducts::find()->leftJoin('order_product', 'shop_products.id = order_product.product_id')->where('order_product.order_id = :order_id',[':order_id' => $model->id])->all();
 	    $orderProducts = $model->orderProducts;
 	    $orderFiles = $model->files;
 	    $post=Yii::$app->request->post();
@@ -71,8 +63,11 @@ class OrdersController extends Controller
         if ($model->load($post) && $model->save()) {
             return $this->redirect(['index']);
         } else {
+	        $modelFile = new UploadForm();
+
             return $this->render('update', [
                 'model' => $model,
+                'modelFile' => $modelFile,
                 'orderProducts' => $orderProducts,
                 'orderFiles' => $orderFiles,
             ]);
@@ -94,6 +89,24 @@ class OrdersController extends Controller
 
 			$data['success'] = true;
 			return json_encode($data);
+		}
+		else {
+			throw new InvalidCallException("Неверный запрос к OrdersController->actionAddproduct()");
+		}
+	}
+
+	public function actionUploadfile()
+	{
+		if (Yii::$app->request->isAjax) {
+			$model = new UploadForm();
+
+			$model->file = UploadedFile::getInstance($model, 'file');
+			if ($model->upload()) {
+				// file is uploaded successfully
+				return;
+			}
+
+			return 'No loading';
 		}
 		else {
 			throw new InvalidCallException("Неверный запрос к OrdersController->actionAddproduct()");

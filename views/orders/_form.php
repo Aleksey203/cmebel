@@ -38,6 +38,7 @@ use dosamigos\fileupload\FileUploadUI;
 			<?php  echo $this->render('_files_form', [
 				'orderFiles' => $orderFiles,
 				'model' => $model,
+				'modelFile' => $modelFile,
 			]) ?>
 		</div>
 	</div>
