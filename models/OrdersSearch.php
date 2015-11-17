@@ -18,7 +18,7 @@ class OrdersSearch extends Orders
     public function rules()
     {
         return [
-            [['id', 'order_opencart_id', 'version', 'client_id', 'status_id'], 'integer'],
+            [['id', 'order_opencart_id', 'version', 'client_id', 'status'], 'integer'],
             [['total'], 'number'],
             [['date_added', 'date_modified'], 'safe'],
         ];
@@ -60,7 +60,7 @@ class OrdersSearch extends Orders
             'id' => $this->id,
             'order_opencart_id' => $this->order_opencart_id,
             'version' => $this->version,
-            'status_id' => $this->status_id,
+            'status' => $this->status,
             'total' => $this->total,
         ]);
 	    if(!empty($params['Orders']['from_date']) AND !empty($params['Orders']['to_date']))
