@@ -49,34 +49,6 @@ use dosamigos\fileupload\FileUploadUI;
 		'model' => $model,
 	]) ?>
 
-
-
-
-	<?php /*echo FileUploadUI::widget([
-		'model' => $model,
-		'attribute' => 'total',
-		'url' => ['orders/upload', 'id' => $model->id],
-		'gallery' => false,
-		'fieldOptions' => [
-			'accept' => 'image/*'
-		],
-		'clientOptions' => [
-			'maxFileSize' => 2000000
-		],
-		// ...
-		'clientEvents' => [
-			'fileuploaddone' => 'function(e, data) {
-                                    console.log(e);
-                                    console.log(data);
-                                }',
-			'fileuploadfail' => 'function(e, data) {
-                                    console.log(e);
-                                    console.log(data);
-                                }',
-		],
-	]);*/
-	?>
-
     <div class="form-group">
         <?= Html::submitButton('Сохранить в этой версии', ['class' => 'btn btn-success' ]) ?>
         <?= Html::submitButton('Сохранить в новой версии', ['class' => 'btn btn-primary']) ?>
