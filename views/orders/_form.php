@@ -14,6 +14,7 @@ use dosamigos\fileupload\FileUploadUI;
 
 <div class="orders-form">
 	<?php $form = ActiveForm::begin(); ?>
+	<?=Html::hiddenInput('new_order', 0,['id'=>'new_order_input']);?>
 	<div class="row">
 		<div class="col-xs-6 col-sm-6">
 			<?= DetailView::widget([
@@ -52,7 +53,7 @@ use dosamigos\fileupload\FileUploadUI;
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить в этой версии', ['class' => 'btn btn-success' ]) ?>
-        <?= Html::submitButton('Сохранить в новой версии', ['class' => 'btn btn-primary']) ?>
+        <?= Html::submitButton('Сохранить в новой версии', ['class' => 'btn btn-primary', 'id'=>'new_order']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

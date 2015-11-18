@@ -54,11 +54,24 @@ class OrdersController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
+	    $modelTemp = $this->findModel($id);
+	    $post=Yii::$app->request->post();
+	    if (isset($post['new_order']) AND $post['new_order']==1) {
+		    $model = new Orders();
+		    $versionLast = Orders::find()->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$modelTemp->order_opencart_id])
+			    ->orderBy('version DESC')->limit(1)->one();
+		    $model->version = $versionLast->version+1;
+		    $model->order_opencart_id = $modelTemp->order_opencart_id;
+		    $model->client_id = $modelTemp->client_id;
+		    $model->status_id = $modelTemp->status_id;
+		    $model->save(false);
+	    } else {
+		    $model = $modelTemp;
+	    }
+
 
 	    $orderProducts = $model->orderProducts;
 	    $orderFiles = $model->files;
-	    $post=Yii::$app->request->post();
 
         if ($model->load($post) && $model->save()) {
             return $this->redirect(['index']);
@@ -95,13 +108,37 @@ class OrdersController extends Controller
 		}
 	}
 
+
+	public function actionAddfile()
+	{
+		if (Yii::$app->request->isAjax) {
+			$data['success'] = false;
+
+			$get = \Yii::$app->request->get();
+
+			$get['file'] = Orders::trunslit($get['filename']);
+
+			$data['html'] = $this->renderPartial('_add_file', [
+				'get' => $get,
+			]);
+
+			$data['success'] = true;
+			return json_encode($data);
+		}
+		else {
+			throw new InvalidCallException("Неверный запрос к OrdersController->actionAddproduct()");
+		}
+	}
+
 	public function actionUploadfile()
 	{
 		if (Yii::$app->request->isAjax) {
-			$model = new UploadForm();
+			$id = intval($_GET['id']);
 
+			$model = new UploadForm();
 			$model->file = UploadedFile::getInstance($model, 'file');
-			if ($model->upload()) {
+
+			if ($model->upload($id)) {
 				// file is uploaded successfully
 				return;
 			}
@@ -141,4 +178,5 @@ class OrdersController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
 }

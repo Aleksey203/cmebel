@@ -6,6 +6,7 @@ namespace app\models;
 use yii\base\Model;
 use yii\web\UploadedFile;
 use Yii;
+use app\models\Orders;
 
 class UploadForm extends Model
 {
@@ -21,10 +22,13 @@ class UploadForm extends Model
 		];
 	}
 
-	public function upload()
+	public function upload($id)
 	{
 		if ($this->validate()) {
-			$this->file->saveAs(Yii::getAlias('@webroot').'/uploads/' .$this->file->baseName . '.' . $this->file->extension);
+			$path = Yii::getAlias('@app/runtime').'/order_files/'.$id.'/';
+			if (!is_dir($path)) mkdir($path);
+			$file = Orders::trunslit($this->file->baseName). '.' . $this->file->extension;
+			$this->file->saveAs($path . $file);
 			return true;
 		} else {
 			return false;

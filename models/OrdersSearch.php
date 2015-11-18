@@ -42,7 +42,7 @@ class OrdersSearch extends Orders
      */
     public function search($params)
     {
-        $query = Orders::find()->joinWith('client');
+        $query = Orders::find()->joinWith('client')->orderBy('order_opencart_id desc, version desc');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
