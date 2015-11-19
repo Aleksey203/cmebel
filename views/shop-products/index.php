@@ -44,6 +44,15 @@ $this->params['breadcrumbs'][] = $this->title;
              'quantity',
             // 'image',
 	        [
+		        'attribute' => 'image',
+		        'format' => 'html',
+		        'filter' => false,
+		        'value' => function ($data) {
+			        $image = ($data->image) ? Html::img(\Yii::getAlias('@web/files/shop_products/').$data->id.'/'.$data->image,['width'=>100]) : '';
+			        return  $image;
+		        },
+	        ],
+	        [
 		        'attribute' => 'status',
 		        'filter' =>  array( '0'=>'выключен', '1'=>'активен'),
 		        'value' => function ($data) {

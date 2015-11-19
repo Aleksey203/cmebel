@@ -34,7 +34,7 @@ class OpencartController extends Controller
 	    $query = "
 	        SELECT order_id, firstname, lastname, email, telephone, total, date_added, date_modified
 	        FROM oc_order
-	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= 7
+	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= 70
 	        "; //echo $query;
 
 	    $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
@@ -218,6 +218,11 @@ class OpencartController extends Controller
 
 			if (!isset($productOpencart['name']) OR $productOpencart['name']==null OR strlen($productOpencart['name'])>0==false)
 				$productOpencart['name'] = $productOpencart['model'];
+			$array = explode('/',$productOpencart['image']);
+			echo '<pre>';
+			print_r($array);
+			echo '</pre>';
+			$image = array_pop($array);
 			\Yii::$app->db->createCommand()->insert('shop_products', [
 				'opencart_id' => $productOpencart['product_id'],
 				'name' => $productOpencart['name'],
@@ -227,9 +232,21 @@ class OpencartController extends Controller
 				'quantity' => $productOpencart['quantity'],
 				'date_added' => $productOpencart['date_added'],
 				'date_modified' => $productOpencart['date_modified'],
-				'image' => $productOpencart['image'],
+				'image' => $image,
 				'status' => $productOpencart['status']
 			])->execute();
+			if ($image) {
+				$query = "
+			        SELECT id
+			        FROM shop_products
+			        ORDER BY id DESC LIMIT 1
+			        "; //echo $query;
+				$productId = \Yii::$app->db->createCommand($query)->queryScalar();
+				$pathOpencart = \Yii::$app->params['urlOpencart'];
+				$path = \Yii::getAlias('@app/web/files/shop_products').'/'.$productId.'/';
+				if (!is_dir($path)) mkdir($path);
+				copy($pathOpencart.'/image/'.$productOpencart['image'], $path.$image);
+			}
 			$insertedP++;
 		}
 		echo "Inserted new products: $insertedP\n";

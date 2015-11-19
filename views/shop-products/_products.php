@@ -1,6 +1,6 @@
 <?php
 /* @var $product app\models\ShopProducts */
-
+use yii\helpers\Html;
 if (isset($products[0])) {
 ?>
 <table class="table table-striped table-bordered">
@@ -23,6 +23,7 @@ if (isset($products[0])) {
 			<td><?=$product->category->name;?></td>
 			<td><?=$product->price;?></td>
 			<td><?=$product->quantity;?></td>
+			<td><?=($product->image) ? Html::img(\Yii::getAlias('@web/files/shop_products/').$product->id.'/'.$product->image,['width'=>80]) : ''?></td>
 			<td><?=($product->status==1) ? 'активен' : 'выключен';?></td>
 			<td>
 				<a href="/index.php?r=shop-products%2Fview&amp;id=<?=$product->id;?>" title="Просмотр" aria-label="Просмотр" data-pjax="0">

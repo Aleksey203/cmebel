@@ -24,7 +24,7 @@ use app\models\ShopCategories;
 
     <?= $form->field($model, 'quantity')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'image')->textInput(['maxlength' => true]) ?>
+    <?=($model->image) ? Html::img(\Yii::getAlias('@web/files/shop_products/').$model->id.'/'.$model->image,['width'=>300]) : ''?>
 
 	<?php
 	if ($model->isNewRecord) echo Html::checkbox('ShopProducts[status]', true, array('label' => 'статус'));
