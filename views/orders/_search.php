@@ -30,7 +30,7 @@ use yii\jui\DatePicker;
 	    'name'  => 'Orders[from_date]',
 	    'value'  => @$_GET['Orders']['from_date'],
 	    'language' => 'ru',
-	    'dateFormat' => 'yyyy-MM-dd',
+	    'dateFormat' => 'dd.MM.yyyy',
 	    'options' => [
 		    'class'=>'form-control form-group',
 		    'style'=>'width:100px; display:inline-block; margin-right:30px;'
@@ -42,7 +42,7 @@ use yii\jui\DatePicker;
 		'name'  => 'Orders[to_date]',
 		'value'  => @$_GET['Orders']['to_date'],
 		'language' => 'ru',
-		'dateFormat' => 'yyyy-MM-dd',
+		'dateFormat' => 'dd.MM.yyyy',
 		'options' => [
 			'class'=>'form-control form-group',
 			'style'=>'width:100px; display:inline-block; margin-right:30px;'

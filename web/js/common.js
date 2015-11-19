@@ -24,6 +24,12 @@ $(document).ready(function(){
         return false;
     });
 
+    doc.on('change', '#version',function(){
+        var version = parseInt($(this).val());
+        var url = $('#version_'+version).attr('href');
+        document.location = url;
+    });
+
     doc.on('change', '.product-quantity',function(){
         var quantity = parseInt($(this).val());
         var tr = $(this).parents('tr.product');

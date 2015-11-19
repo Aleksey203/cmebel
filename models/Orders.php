@@ -64,7 +64,7 @@ class Orders extends \yii\db\ActiveRecord
 
 	public function beforeSave($insert)
 	{
-		if ($_POST['new_order']==1) $products = array();
+		if ($insert) $products = array();
 		else {
 			$query = "
 		        SELECT sp.price, op.quantity
@@ -92,29 +92,21 @@ class Orders extends \yii\db\ActiveRecord
 		return parent::beforeSave($insert);
 	}
 
-	public function afterSave($insert, $changedAttributes)
+	public function getVersions()
 	{
-		parent::afterSave($insert, $changedAttributes);
-		if ($insert) {
-			$saved = true;
-			foreach ($_POST['Orders']['products'] as $id => $v) {
-				if (!$saved) return $saved;
-
-				$orderProduct = new OrderProduct();
-
-				$orderProduct->order_id = $this->id;
-				$orderProduct->product_id = $id;
-				$orderProduct->quantity = $v['quantity'];
-
-				$saved = $orderProduct->save();
-			}
-
-			unset($_POST['Orders']['files']['empty']);
-			$pathTemp = Yii::getAlias('@app/runtime').'/order_files/'.$this->id.'/';
-			$path = Yii::getAlias('@webroot/files/orders').'/'.$this->id.'/';
-			if (!is_dir($path)) mkdir($path);
+		$versions = Orders::find()->select('version')->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$this->order_opencart_id])->orderBy('version')->asArray()->all();
+		foreach ($versions as $k => $version) {
+			$return[$version['version']] = $version['version'];
 		}
-
+		return $return;
+	}
+	public function getVersionsId()
+	{
+		$versions = Orders::find()->select('id,version')->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$this->order_opencart_id])->orderBy('version')->asArray()->all();
+		foreach ($versions as $k => $version) {
+			$return[$version['id']] = $version['version'];
+		}
+		return $return;
 	}
 
 	public function getClient()
@@ -140,7 +132,6 @@ class Orders extends \yii\db\ActiveRecord
 
 	public function setProducts($_products)
 	{
-		if ($_POST['new_order']==1) return true;
 		$oldProducts = OrderProduct::find()->where('order_id=:order_id',[':order_id'=>$this->id])->all();
 		foreach ($oldProducts as $k => $oldProduct) {
 			$delete = true;
@@ -155,7 +146,7 @@ class Orders extends \yii\db\ActiveRecord
 		$saved = true;
 		foreach ($_products as $id => $v) {
 			if (!$saved) return $saved;
-			if ($id=='new') {
+			if ($id=='new' OR $_POST['new_order']==1) {
 				$orderProduct = new OrderProduct();
 				foreach ($v as $productId => $v1) {
 					$orderProduct->order_id = $this->id;
@@ -164,7 +155,9 @@ class Orders extends \yii\db\ActiveRecord
 				}
 			} else {
 				$orderProduct = OrderProduct::findOne($id);
-				$orderProduct->quantity = $v['quantity'];
+				foreach ($v as $productId => $v1) {
+					$orderProduct->quantity = $v1['quantity'];
+				}
 			}
 			$saved = $orderProduct->save();
 		}

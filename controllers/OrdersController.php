@@ -12,6 +12,7 @@ use yii\filters\VerbFilter;
 use app\models\UploadForm;
 use yii\web\UploadedFile;
 use yii\base\InvalidCallException;
+use yii\filters\AccessControl;
 
 /**
  * OrdersController implements the CRUD actions for Orders model.
@@ -26,6 +27,18 @@ class OrdersController extends Controller
                 'actions' => [
                     'delete' => ['post'],
                 ],
+            ],
+            'access' => [
+	            'class' => AccessControl::className(),
+	            'rules' => [
+		            [
+			            'allow' => true,
+			            'roles' => ['@'],
+			            'matchCallback' => function () {
+				            return Yii::$app->user->identity->getIsAdmin();
+			            },
+		            ],
+	            ],
             ],
         ];
     }
