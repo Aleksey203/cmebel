@@ -24,9 +24,9 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             //['class' => 'yii\grid\SerialColumn'],
 
-            'id',
+            //'id',
             'order_opencart_id',
-            'version',
+            //'version',
 	        [
 		        'attribute' => 'client_id',
 		        //'filter' =>  ArrayHelper::map(Clients::find()->all(), 'id', 'name'),

@@ -42,7 +42,7 @@ class OrdersSearch extends Orders
      */
     public function search($params)
     {
-        $query = Orders::find()->joinWith('client');
+        $query = Orders::find()->select('orders.*, MAX(version)')->groupBy('order_opencart_id')->orderBy('order_opencart_id desc, version desc');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -63,14 +63,23 @@ class OrdersSearch extends Orders
             'status_id' => $this->status_id,
             'total' => $this->total,
         ]);
-	    if(!empty($params['Orders']['from_date']) AND !empty($params['Orders']['to_date']))
+	    if(!empty($params['Orders']['from_date']) AND !empty($params['Orders']['to_date'])) {
+		    $params['Orders']['from_date'] =  Yii::$app->formatter->asDate($params['Orders']['from_date'], 'php:Y-m-d');
+		    $params['Orders']['to_date'] =  Yii::$app->formatter->asDate($params['Orders']['to_date'], 'php:Y-m-d');
 	    $query->andWhere('DATE(' . Orders::tableName() . '.date_added) BETWEEN "' . $params['Orders']['from_date'] . '" AND "' . $params['Orders']['to_date'] . '"
 	                        OR DATE(' . Orders::tableName() . '.date_modified) BETWEEN "' . $params['Orders']['from_date'] . '" AND "' . $params['Orders']['to_date'] . '"');
-		else {
-			if(!empty($params['Orders']['from_date'])) $query->andWhere('DATE(' . Orders::tableName() . '.date_added) >= "' . $params['Orders']['from_date'] . '" OR
+	    }
+	    else {
+			if(!empty($params['Orders']['from_date'])) {
+				$params['Orders']['from_date'] =  Yii::$app->formatter->asDate($params['Orders']['from_date'], 'php:Y-m-d');
+				$query->andWhere('DATE(' . Orders::tableName() . '.date_added) >= "' . $params['Orders']['from_date'] . '" OR
 	                                                       DATE(' . Orders::tableName() . '.date_modified) >= "' . $params['Orders']['from_date'] . '"');
-			if(!empty($params['Orders']['to_date'])) $query->andWhere('DATE(' . Orders::tableName() . '.date_added) <= "' . $params['Orders']['to_date'] . '" OR
+			}
+		    if(!empty($params['Orders']['to_date'])) {
+			    $params['Orders']['to_date'] =  Yii::$app->formatter->asDate($params['Orders']['to_date'], 'php:Y-m-d');
+			    $query->andWhere('DATE(' . Orders::tableName() . '.date_added) <= "' . $params['Orders']['to_date'] . '" OR
 	                                                       DATE(' . Orders::tableName() . '.date_modified) <= "' . $params['Orders']['to_date'] . '"');
+			}
 		}
 
 	    if(!empty($params['client'])) $query->andWhere(Clients::tableName() .".name LIKE '%".$params["client"]."%'");

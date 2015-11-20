@@ -19,6 +19,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>
         <?= Html::a('Создать новый товар', ['create'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Создать новую категорию', ['shop-categories/create'], ['class' => 'btn btn-primary']) ?>
     </p>
 
     <?= GridView::widget([
@@ -42,6 +43,15 @@ $this->params['breadcrumbs'][] = $this->title;
              'price',
              'quantity',
             // 'image',
+	        [
+		        'attribute' => 'image',
+		        'format' => 'html',
+		        'filter' => false,
+		        'value' => function ($data) {
+			        $image = ($data->image) ? Html::img(\Yii::getAlias('@web/files/shop_products/').$data->id.'/'.$data->image,['width'=>100]) : '';
+			        return  $image;
+		        },
+	        ],
 	        [
 		        'attribute' => 'status',
 		        'filter' =>  array( '0'=>'выключен', '1'=>'активен'),

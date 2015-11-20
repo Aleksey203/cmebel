@@ -4,13 +4,30 @@
 $(document).ready(function(){
     var doc = $(this);
 
+    doc.on('click', '#new_order',function(){
+        $('#new_order_input').val(1);
+        $(this).parents('form').submit();
+        return false;
+    });
+
     doc.on('click', 'a.remove_product',function(){
         $(this).parents('.product').remove();
         return false;
     });
 
+    doc.on('click', 'a.remove_file',function(){
+        $(this).parents('.file').remove();
+        return false;
+    });
+
     doc.on('click', '.treeview a',function(){
         return false;
+    });
+
+    doc.on('change', '#version',function(){
+        var version = parseInt($(this).val());
+        var url = $('#version_'+version).attr('href');
+        document.location = url;
     });
 
     doc.on('change', '.product-quantity',function(){
@@ -59,4 +76,32 @@ function get_val (str) {
     var arr = Array();
     arr = str.toString().split('#'.toString() );
     return arr[1];
+}
+
+function add_file (id,filename) {
+    var urlAddFile = '/index.php?r=orders/addfile',
+        order_id = id,
+        filename = filename;
+    $.ajax({
+        url: urlAddFile,
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            filename: filename,
+            order_id: order_id,
+        },
+        success: function(data) {
+            if (data.success) {
+                $('.no_files').hide();
+                var tbody = $('.order_files tbody');
+                tbody.append(data.html);
+            } else {
+                alert(data.data);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert(errorThrown);
+        }
+    });
+    return false;
 }

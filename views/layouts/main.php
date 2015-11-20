@@ -28,8 +28,8 @@ AppAsset::register($this);
 <div class="wrap">
     <?php
     NavBar::begin([
-        'brandLabel' => 'CMebel',
-        'brandUrl' => Yii::$app->homeUrl,
+        //'brandLabel' => 'CMebel',
+        //'brandUrl' => Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar-inverse navbar-fixed-top',
         ],

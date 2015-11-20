@@ -29,6 +29,12 @@ $config = [
 			    ],
 		    ],
 	    ],
+	    'formatter' => [
+		    'class' => 'yii\i18n\Formatter',
+		    'dateFormat' => 'php:d.m.Y',
+		    'datetimeFormat' => 'php:d.m.Y H:i',
+		    'timeFormat' => 'php:H:i:s',
+	    ],
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'FOKv4eLGP1g6_rs2inVhHL-MubUPSoMO',

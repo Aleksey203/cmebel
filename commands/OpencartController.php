@@ -39,7 +39,10 @@ class OpencartController extends Controller
 
 	    $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
 		    ->queryAll();
-
+		if (!isset($ordersOpencart[0])) {
+		    echo 'No orders in opencart in last 7 days';
+			die();
+		}
 	    $newClients = array();
 	    foreach ($ordersOpencart as $k => $orderOpencart) {
 		    foreach ($orders as $order) {
@@ -63,7 +66,7 @@ class OpencartController extends Controller
 		    \Yii::$app->db->createCommand()->insert('clients', $newClient)->execute();
 	    }
 
-	    echo '<pre>';
+	    echo '$ordersOpencart = <pre>';
 	    print_r($ordersOpencart);
 	    echo '</pre>';
 	    foreach ($ordersOpencart as $k => $orderOpencart) {
@@ -218,6 +221,11 @@ class OpencartController extends Controller
 
 			if (!isset($productOpencart['name']) OR $productOpencart['name']==null OR strlen($productOpencart['name'])>0==false)
 				$productOpencart['name'] = $productOpencart['model'];
+			$array = explode('/',$productOpencart['image']);
+			echo '<pre>';
+			print_r($array);
+			echo '</pre>';
+			$image = array_pop($array);
 			\Yii::$app->db->createCommand()->insert('shop_products', [
 				'opencart_id' => $productOpencart['product_id'],
 				'name' => $productOpencart['name'],
@@ -227,9 +235,21 @@ class OpencartController extends Controller
 				'quantity' => $productOpencart['quantity'],
 				'date_added' => $productOpencart['date_added'],
 				'date_modified' => $productOpencart['date_modified'],
-				'image' => $productOpencart['image'],
+				'image' => $image,
 				'status' => $productOpencart['status']
 			])->execute();
+			if ($image) {
+				$query = "
+			        SELECT id
+			        FROM shop_products
+			        ORDER BY id DESC LIMIT 1
+			        "; //echo $query;
+				$productId = \Yii::$app->db->createCommand($query)->queryScalar();
+				$pathOpencart = \Yii::$app->params['urlOpencart'];
+				$path = \Yii::getAlias('@app/web/files/shop_products').'/'.$productId.'/';
+				if (!is_dir($path)) mkdir($path);
+				copy($pathOpencart.'/image/'.$productOpencart['image'], $path.$image);
+			}
 			$insertedP++;
 		}
 		echo "Inserted new products: $insertedP\n";

@@ -38,8 +38,10 @@ class Orders extends \yii\db\ActiveRecord
             [['order_opencart_id', 'client_id', 'total', 'date_added', 'date_modified'], 'required'],
             [['order_opencart_id', 'version', 'client_id', 'status_id'], 'integer'],
             [['total'], 'number'],
-            [['date_added', 'date_modified','products'], 'safe'],
-            [['order_opencart_id', 'version'], 'unique', 'targetAttribute' => ['order_opencart_id', 'version'], 'message' => 'Номер заказа из opencart в этой версии уже существет и не может быть дублирован.']
+	        ['total', 'default', 'value' => 0],
+            [['date_added', 'date_modified','products','files'], 'safe'],
+	        [['date_added', 'date_modified'], 'default', 'value' => date('Y-m-d', strtotime( 'now' ))],
+	        [['order_opencart_id', 'version'], 'unique', 'targetAttribute' => ['order_opencart_id', 'version'], 'message' => 'Номер заказа из opencart в этой версии уже существет и не может быть дублирован.']
         ];
     }
 
@@ -50,7 +52,7 @@ class Orders extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'номер',
-            'order_opencart_id' => 'номер заказа из opencart',
+            'order_opencart_id' => 'номер заказа',
             'version' => 'версия',
             'client_id' => 'клиент',
             'status_id' => 'статус',
@@ -62,17 +64,18 @@ class Orders extends \yii\db\ActiveRecord
 
 	public function beforeSave($insert)
 	{
+		if ($insert) $products = array();
+		else {
+			$query = "
+		        SELECT sp.price, op.quantity
+		        FROM order_product op
+		        LEFT JOIN shop_products sp ON sp.id=op.product_id
+		        WHERE op.order_id = ".$this->id."
+		        "; //echo $query;
 
-		$query = "
-	        SELECT sp.price, op.quantity
-	        FROM order_product op
-	        LEFT JOIN shop_products sp ON sp.id=op.product_id
-	        WHERE op.order_id = ".$this->id."
-	        "; //echo $query;
-
-		$products = \Yii::$app->db->createCommand($query)
-			->queryAll();
-
+			$products = \Yii::$app->db->createCommand($query)
+				->queryAll();
+		}
 		$total = 0;
 		foreach ($products as $k => $product) {
 			$total += $product['price']*$product['quantity'];
@@ -87,6 +90,23 @@ class Orders extends \yii\db\ActiveRecord
 		}
 
 		return parent::beforeSave($insert);
+	}
+
+	public function getVersions()
+	{
+		$versions = Orders::find()->select('version')->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$this->order_opencart_id])->orderBy('version')->asArray()->all();
+		foreach ($versions as $k => $version) {
+			$return[$version['version']] = $version['version'];
+		}
+		return $return;
+	}
+	public function getVersionsId()
+	{
+		$versions = Orders::find()->select('id,version')->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$this->order_opencart_id])->orderBy('version')->asArray()->all();
+		foreach ($versions as $k => $version) {
+			$return[$version['id']] = $version['version'];
+		}
+		return $return;
 	}
 
 	public function getClient()
@@ -126,7 +146,7 @@ class Orders extends \yii\db\ActiveRecord
 		$saved = true;
 		foreach ($_products as $id => $v) {
 			if (!$saved) return $saved;
-			if ($id=='new') {
+			if ($id=='new' OR $_POST['new_order']==1) {
 				$orderProduct = new OrderProduct();
 				foreach ($v as $productId => $v1) {
 					$orderProduct->order_id = $this->id;
@@ -135,7 +155,9 @@ class Orders extends \yii\db\ActiveRecord
 				}
 			} else {
 				$orderProduct = OrderProduct::findOne($id);
-				$orderProduct->quantity = $v['quantity'];
+				foreach ($v as $productId => $v1) {
+					$orderProduct->quantity = $v1['quantity'];
+				}
 			}
 			$saved = $orderProduct->save();
 		}
@@ -145,5 +167,65 @@ class Orders extends \yii\db\ActiveRecord
 	public function getFiles()
 	{
 		return $this->hasMany(OrderFiles::className(), ['order_id' => 'id']);
+	}
+
+	public function setFiles($_files)
+	{
+		if ($_POST['new_order']==1) return true;
+		unset($_files['empty']);
+		$pathTemp = Yii::getAlias('@app/runtime').'/order_files/'.$this->id.'/';
+		$path = Yii::getAlias('@webroot/files/orders').'/'.$this->id.'/';
+		if (!is_dir($path)) mkdir($path);
+
+		$oldFiles = OrderFiles::find()->where('order_id=:order_id',[':order_id'=>$this->id])->all();
+		foreach ($oldFiles as $k => $oldFile) {
+			$delete = true;
+			foreach ($_files as $id => $v) {
+				if ($oldFile->file==$v AND (!is_file($pathTemp.$v))) $delete = false;
+			}
+			if ($delete) {
+				OrderFiles::deleteAll('id=:id',[':id'=>$oldFile->id]);
+				unlink($path.$oldFile->file);
+			}
+		}
+		
+		$saved = true;
+		foreach ($_files as $file) {
+			if (!$saved) return $saved;
+			if (!is_file($pathTemp.$file)) continue;
+			$orderFile = new OrderFiles();
+			$orderFile->order_id = $this->id;
+			$orderFile->name = $file;
+			$orderFile->file = $file;
+			if ($orderFile->save()) {
+				if (!rename($pathTemp.$file, $path.$file)) $saved = false;
+			} else {
+				$saved = false;
+			}
+			if (is_file($pathTemp.$file)) unlink($pathTemp.$file);
+		}
+		return $saved;
+	}
+
+	//преобразование кирилицы в транслит
+	static public function trunslit($str){
+		$str = Orders::strtolower_utf8(trim(strip_tags($str)));
+		$str = str_replace(
+			array('ä','ö','ü','а','б','в','г','д','е','ё','ж', 'з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц', 'ч',  'ш',   'щ','ь','ы','ъ','э','ю','я','і','ї','є'),
+			array('a','o','u','a','b','v','g','d','e','e','zh','z','i','i','k','l','m','n','o','p','r','s','t','u','f','h','ts','ch','sch','shch','','y','','e','yu','ya','i','yi','e'),
+			$str);
+		$str = preg_replace('~[^-a-z0-9_.]+~u', '_', $str);	//удаление лишних символов
+		$str = preg_replace('~[-]+~u','-',$str);			//удаление лишних -
+		$str = trim($str,'-');								//обрезка по краям -
+		$str = trim($str,'_');								//обрезка по краям -
+		$str = trim($str,'.');
+		return $str;
+	}
+
+	//зaмена функции strtolower
+	static public function strtolower_utf8($str){
+		$large = array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','À','Á','Â','Ã','Ä','Å','Æ','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ð','Ñ','Ò','Ó','Ô','Õ','Ö','Ø','Ù','Ú','Û','Ü','Ý','А','Б','В','Г','Д','Е','Ё','Ж','З','И','Й','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х','Ц','Ч','Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я','Є');
+		$small = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','à','á','â','ã','ä','å','æ','ç','è','é','ê','ë','ì','í','î','ï','ð','ñ','ò','ó','ô','õ','ö','ø','ù','ú','û','ü','ý','а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п','р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ь','э','ю','я','є');
+		return str_replace($large,$small,$str);
 	}
 }

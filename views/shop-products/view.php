@@ -38,7 +38,12 @@ $this->params['breadcrumbs'][] = $this->title;
 	        ],
             'price',
             'quantity',
-            'image',
+            //'image',
+	        [
+		        'attribute' => 'image',
+		        'format' => 'html',
+		        'value' => ($model->image) ? Html::img(\Yii::getAlias('@web/files/shop_products/').$model->id.'/'.$model->image) : ''
+	        ],
 	        [
 		        'attribute' => 'status',
 		        'value' => $model['status']==1 ? 'активен' : 'выключен'
