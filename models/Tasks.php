@@ -89,6 +89,11 @@ class Tasks extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'user_id'])->from(User::tableName() . ' AS userData');
     }
 
+    public function getOrderData()
+    {
+        return $this->hasOne(Orders::className(), ['order_opencart_id' => 'order_opencart_id']);
+    }
+
 
     public function getOwnerUser() {
         return $this->userData->username;
