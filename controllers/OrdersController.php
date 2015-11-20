@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\ShopProducts;
+use app\models\Tasks;
 use Yii;
 use app\models\Orders;
 use app\models\OrdersSearch;
@@ -31,6 +32,28 @@ class OrdersController extends Controller
             'access' => [
 	            'class' => AccessControl::className(),
 	            'rules' => [
+		            [
+			            'allow' => true,
+			            'roles' => ['@'],
+			            'actions' => ['update'],
+			            'matchCallback' => function () {
+				            if (Yii::$app->user->isGuest) {
+					            $return = false;
+				            } else {
+					            $userId = Yii::$app->user->id;
+					            $orderId=intval($_GET['id']);
+					            $order = Orders::findOne($orderId);
+					            $task = Tasks::find()
+						            ->where('order_opencart_id=:order_opencart_id AND user_id=:user_id',
+							            [
+								            ':order_opencart_id'=>$order->order_opencart_id,
+								            ':user_id'=>$userId,
+							            ])->one();
+					            $return = (isset($task->id));
+				            }
+				            return $return;
+			            },
+		            ],
 		            [
 			            'allow' => true,
 			            'roles' => ['@'],
