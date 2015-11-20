@@ -34,12 +34,15 @@ class OpencartController extends Controller
 	    $query = "
 	        SELECT order_id, firstname, lastname, email, telephone, total, date_added, date_modified
 	        FROM oc_order
-	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= 70
+	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= 7
 	        "; //echo $query;
 
 	    $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
 		    ->queryAll();
-
+		if (!isset($ordersOpencart[0])) {
+		    echo 'No orders in opencart in last 7 days';
+			die();
+		}
 	    $newClients = array();
 	    foreach ($ordersOpencart as $k => $orderOpencart) {
 		    foreach ($orders as $order) {
@@ -63,7 +66,7 @@ class OpencartController extends Controller
 		    \Yii::$app->db->createCommand()->insert('clients', $newClient)->execute();
 	    }
 
-	    echo '<pre>';
+	    echo '$ordersOpencart = <pre>';
 	    print_r($ordersOpencart);
 	    echo '</pre>';
 	    foreach ($ordersOpencart as $k => $orderOpencart) {
