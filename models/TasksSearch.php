@@ -155,7 +155,8 @@ class TasksSearch extends Tasks
         $query->andFilterWhere(['like', 'text', $this->text])
             ->andFilterWhere(['like', 'comment', $this->comment]);
 
-//        $query->with('userData');
+        $query->with('orderData');
+
 
         $query->joinWith(['userData' => function ($q) {
                 $q->where('userData.username LIKE "%' . $this->ownerUser . '%"');

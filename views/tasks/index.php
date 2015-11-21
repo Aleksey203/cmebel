@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\TasksSearch */
@@ -62,9 +63,35 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format'=>['date', 'php:d.m.Y']
             ],
 
+//            [
+//                'class' => 'yii\grid\ActionColumn',
+//                'template'=>'{update}  ',
+//            ],
+
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template'=>'{update}  {delete}',
+                'template'=>'{update} {delete}  {viewOrder} ',
+                'buttons' => [
+                    'viewOrder' => function ($url, $model) {
+                            return Html::a('<span class="glyphicon glyphicon-file"></span>', $url, [
+                                'title' => 'Заказ',
+                            ]);
+                        },
+                ],
+                'urlCreator' => function ($action, $model, $key) {
+                        if ($action === 'viewOrder') {
+                            $url = Url::to(['orders/update', 'id' => $model->orderData->id]);
+                            return $url;
+                        }
+                        elseif($action === 'update') {
+                            $url = Url::toRoute(['update', 'id' => $model->id]);
+                            return $url;
+                        } elseif($action === 'delete') {
+                            $url = Url::toRoute(['delete', 'id' => $model->id]);
+                            return $url;
+                        }
+
+                    }
             ],
         ],
     ]); ?>
