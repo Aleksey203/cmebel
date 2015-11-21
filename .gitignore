@@ -1,4 +1,5 @@
 /files
+/web/files
 composer.lock
 /config/db.php
 # phpstorm project files
