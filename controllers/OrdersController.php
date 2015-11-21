@@ -96,6 +96,7 @@ class OrdersController extends Controller
 		    $model = new Orders();
 		    $versionLast = Orders::find()->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$modelTemp->order_opencart_id])
 			    ->orderBy('version DESC')->limit(1)->one();
+		    $post['Orders']['version'] = $versionLast->version+1;
 		    $model->version = $versionLast->version+1;
 		    $model->order_opencart_id = $modelTemp->order_opencart_id;
 		    $model->client_id = $modelTemp->client_id;
@@ -105,13 +106,14 @@ class OrdersController extends Controller
 		    $model = $modelTemp;
 	    }
 
-
-	    $orderProducts = $model->orderProducts;
-	    $orderFiles = $model->files;
-
         if ($model->load($post) && $model->save()) {
+	        if (!\Yii::$app->user->identity->getIsAdmin())
+		        return $this->redirect(['tasks/index']);
             return $this->redirect(['index']);
         } else {
+
+	        $orderProducts = $model->orderProducts;
+	        $orderFiles = $model->files;
 	        $modelFile = new UploadForm();
 
             return $this->render('update', [

@@ -25,7 +25,10 @@ $this->params['breadcrumbs'][] = $this->title;
             //['class' => 'yii\grid\SerialColumn'],
 
             //'id',
-            'order_opencart_id',
+	        [
+	            'attribute' => 'order_opencart_id',
+	            'options' => ['width' => '50px;']
+	        ],
             //'version',
 	        [
 		        'attribute' => 'client_id',

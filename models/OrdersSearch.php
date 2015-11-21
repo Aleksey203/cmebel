@@ -42,10 +42,16 @@ class OrdersSearch extends Orders
      */
     public function search($params)
     {
-        $query = Orders::find()->select('orders.*, MAX(version)')->groupBy('order_opencart_id')->orderBy('order_opencart_id desc, version desc');
+        $query = Orders::find()->select('orders.*, MAX(version)')->groupBy('order_opencart_id');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort'=>[
+	            'defaultOrder'=>[
+		            'order_opencart_id'=>SORT_DESC,
+		            'version'=>SORT_DESC
+	            ]
+            ]
         ]);
 
         $this->load($params);
