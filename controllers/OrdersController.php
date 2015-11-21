@@ -101,6 +101,7 @@ class OrdersController extends Controller
 		    $model->order_opencart_id = $modelTemp->order_opencart_id;
 		    $model->client_id = $modelTemp->client_id;
 		    $model->status_id = $modelTemp->status_id;
+		    $model->date_added = $modelTemp->date_added;
 		    $model->save(false);
 	    } else {
 		    $model = $modelTemp;
@@ -108,7 +109,7 @@ class OrdersController extends Controller
 
         if ($model->load($post) && $model->save()) {
 	        if (!\Yii::$app->user->identity->getIsAdmin())
-		        return $this->redirect(['tasks/index']);
+		        return $this->redirect(['tasks-manager/index']);
             return $this->redirect(['index']);
         } else {
 

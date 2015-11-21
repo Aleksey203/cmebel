@@ -49,7 +49,7 @@ class SiteController extends Controller
     {
 	    if (!\Yii::$app->user->isGuest) {
 		    if (!\Yii::$app->user->identity->getIsAdmin())
-			    return $this->redirect(['tasks/index']);
+			    return $this->redirect(['tasks-manager/index']);
 	    }
 	    return $this->redirect(['orders/index']);
         //return $this->render('index');

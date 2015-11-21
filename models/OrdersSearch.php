@@ -42,14 +42,13 @@ class OrdersSearch extends Orders
      */
     public function search($params)
     {
-        $query = Orders::find()->select('orders.*, MAX(version)')->groupBy('order_opencart_id');
+	    $query = Orders::find()->leftJoin('clients','clients.id=orders.client_id')->where('orders.last_version=1');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
             'sort'=>[
 	            'defaultOrder'=>[
-		            'order_opencart_id'=>SORT_DESC,
-		            'version'=>SORT_DESC
+		            'order_opencart_id'=>SORT_DESC
 	            ]
             ]
         ]);
