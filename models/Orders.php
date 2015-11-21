@@ -183,8 +183,29 @@ class Orders extends \yii\db\ActiveRecord
 
 	public function setFiles($_files)
 	{
-		if ($_POST['new_order']==1) return true;
 		unset($_files['empty']);
+		if ($_POST['new_order']==1) {
+			$pathId = $_files['pathId'];
+			unset($_files['pathId']);
+			$oldPath = Yii::getAlias('@webroot/files/orders').'/'.$pathId.'/';
+			$tempPath = Yii::getAlias('@app/runtime').'/order_files/'.$pathId.'/';
+			$newPath = Yii::getAlias('@webroot/files/orders').'/'.$this->id.'/';
+			if (!is_dir($newPath)) mkdir($newPath);
+			foreach ($_files as $file) {
+				//создать записи в бд в таблице order_files
+				$orderFile = new OrderFiles();
+				$orderFile->order_id = $this->id;
+				$orderFile->name = $file;
+				$orderFile->file = $file;
+				$orderFile->save();
+				//скопировать файлы в новую папку
+				if (is_file($oldPath.$file)) copy($oldPath.$file,$newPath.$file);
+				if (is_file($tempPath.$file)) rename($tempPath.$file,$newPath.$file);
+			}
+
+			return true;
+		}
+
 		$pathTemp = Yii::getAlias('@app/runtime').'/order_files/'.$this->id.'/';
 		$path = Yii::getAlias('@webroot/files/orders').'/'.$this->id.'/';
 		if (!is_dir($path)) mkdir($path);
@@ -197,7 +218,7 @@ class Orders extends \yii\db\ActiveRecord
 			}
 			if ($delete) {
 				OrderFiles::deleteAll('id=:id',[':id'=>$oldFile->id]);
-				unlink($path.$oldFile->file);
+				if (is_file($path.$oldFile->file)) unlink($path.$oldFile->file);
 			}
 		}
 		

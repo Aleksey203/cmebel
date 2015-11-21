@@ -96,6 +96,7 @@ class OrdersController extends Controller
 		    $model = new Orders();
 		    $versionLast = Orders::find()->where('order_opencart_id=:order_opencart_id',[':order_opencart_id'=>$modelTemp->order_opencart_id])
 			    ->orderBy('version DESC')->limit(1)->one();
+		    $post['Orders']['files']['pathId'] = $versionLast->id;
 		    $post['Orders']['version'] = $versionLast->version+1;
 		    $model->version = $versionLast->version+1;
 		    $model->order_opencart_id = $modelTemp->order_opencart_id;
