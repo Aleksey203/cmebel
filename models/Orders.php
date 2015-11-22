@@ -11,6 +11,7 @@ use Yii;
  * @property string $id
  * @property string $order_opencart_id
  * @property integer $version
+ * @property integer $last_version
  * @property string $client_id
  * @property integer $status_id
  * @property string $total
@@ -36,7 +37,7 @@ class Orders extends \yii\db\ActiveRecord
     {
         return [
             [['order_opencart_id', 'client_id', 'total', 'date_added', 'date_modified'], 'required'],
-            [['order_opencart_id', 'version', 'client_id', 'status_id'], 'integer'],
+            [['order_opencart_id', 'last_version', 'version', 'client_id', 'status_id'], 'integer'],
             [['total'], 'number'],
 	        ['total', 'default', 'value' => 0],
             [['date_added', 'date_modified','products','files'], 'safe'],
@@ -64,7 +65,16 @@ class Orders extends \yii\db\ActiveRecord
 
 	public function beforeSave($insert)
 	{
-		if ($insert) $products = array();
+
+		$date = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
+		$this->date_modified = $date;
+		$total = 0;
+
+		if ($insert) {
+			Orders::updateAll(['last_version' => 0], 'order_opencart_id=:order_opencart_id',
+				['order_opencart_id'=>$this->order_opencart_id]);
+			$this->last_version = 1;
+		}
 		else {
 			$query = "
 		        SELECT sp.price, op.quantity
@@ -75,19 +85,13 @@ class Orders extends \yii\db\ActiveRecord
 
 			$products = \Yii::$app->db->createCommand($query)
 				->queryAll();
+
+			foreach ($products as $k => $product) {
+				$total += $product['price']*$product['quantity'];
+			}
 		}
-		$total = 0;
-		foreach ($products as $k => $product) {
-			$total += $product['price']*$product['quantity'];
-		}
+
 		$this->total = $total;
-
-		$date = Yii::$app->formatter->asDate('now', 'php:Y-m-d H:i:s');
-		$this->date_modified = $date;
-
-		if ($insert) {
-			$this->date_added = $date;
-		}
 
 		return parent::beforeSave($insert);
 	}
@@ -107,6 +111,14 @@ class Orders extends \yii\db\ActiveRecord
 			$return[$version['id']] = $version['version'];
 		}
 		return $return;
+	}
+
+	public function updateVersion() {
+		$versionLastModel = Orders::find()->where('order_opencart_id=:order_opencart_id',
+			[':order_opencart_id'=>$this->order_opencart_id])
+			->orderBy('version DESC')->limit(1)->one();
+		$this->last_version =  ($versionLastModel->version==$this->version) ? 1 : 0;
+		$this->updateAttributes(['last_version']);
 	}
 
 	public function getClient()
@@ -171,8 +183,29 @@ class Orders extends \yii\db\ActiveRecord
 
 	public function setFiles($_files)
 	{
-		if ($_POST['new_order']==1) return true;
 		unset($_files['empty']);
+		if ($_POST['new_order']==1) {
+			$pathId = $_files['pathId'];
+			unset($_files['pathId']);
+			$oldPath = Yii::getAlias('@webroot/files/orders').'/'.$pathId.'/';
+			$tempPath = Yii::getAlias('@app/runtime').'/order_files/'.$pathId.'/';
+			$newPath = Yii::getAlias('@webroot/files/orders').'/'.$this->id.'/';
+			if (!is_dir($newPath)) mkdir($newPath);
+			foreach ($_files as $file) {
+				//создать записи в бд в таблице order_files
+				$orderFile = new OrderFiles();
+				$orderFile->order_id = $this->id;
+				$orderFile->name = $file;
+				$orderFile->file = $file;
+				$orderFile->save();
+				//скопировать файлы в новую папку
+				if (is_file($oldPath.$file)) copy($oldPath.$file,$newPath.$file);
+				if (is_file($tempPath.$file)) rename($tempPath.$file,$newPath.$file);
+			}
+
+			return true;
+		}
+
 		$pathTemp = Yii::getAlias('@app/runtime').'/order_files/'.$this->id.'/';
 		$path = Yii::getAlias('@webroot/files/orders').'/'.$this->id.'/';
 		if (!is_dir($path)) mkdir($path);
@@ -185,7 +218,7 @@ class Orders extends \yii\db\ActiveRecord
 			}
 			if ($delete) {
 				OrderFiles::deleteAll('id=:id',[':id'=>$oldFile->id]);
-				unlink($path.$oldFile->file);
+				if (is_file($path.$oldFile->file)) unlink($path.$oldFile->file);
 			}
 		}
 		

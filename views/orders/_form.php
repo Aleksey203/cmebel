@@ -64,7 +64,7 @@ use dosamigos\fileupload\FileUploadUI;
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить в этой версии', ['class' => 'btn btn-success' , 'data-confirm'=>"Вы уверены, что хотите сохранить в этой версии?"]) ?>
-        <?= Html::submitButton('Сохранить в новой версии', ['class' => 'btn btn-primary', 'id'=>'new_order', 'data-confirm'=>"Вы уверены, что хотите сохранить в новой версии?"]) ?>
+        <?= Html::submitButton('Сохранить в новой версии', ['class' => 'btn btn-primary', 'id'=>'new_order']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

@@ -34,13 +34,12 @@ class OpencartController extends Controller
 	    $query = "
 	        SELECT order_id, firstname, lastname, email, telephone, total, date_added, date_modified
 	        FROM oc_order
-	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= 7
-	        "; //echo $query;
+	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= ".\Yii::$app->params['orderDays']; //echo $query;
 
 	    $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
 		    ->queryAll();
 		if (!isset($ordersOpencart[0])) {
-		    echo 'No orders in opencart in last 7 days';
+		    echo 'No orders in opencart in last '.\Yii::$app->params['orderDays'].' days';
 			die();
 		}
 	    $newClients = array();
@@ -281,5 +280,22 @@ class OpencartController extends Controller
 			}
 		}
 		echo "Inserted new statuses: $insertedS\n";
+	}
+	public function actionClear()
+	{
+		$queries = [
+			'TRUNCATE `orders`',
+			'TRUNCATE `order_files`',
+			'TRUNCATE `order_product`',
+			'TRUNCATE `shop_categories`',
+			'TRUNCATE `shop_products`',
+			'TRUNCATE `tasks`',
+			'TRUNCATE `task_files`',
+		];
+		foreach ($queries as $query) {
+			if (\Yii::$app->db->createCommand($query)->execute()==0)
+				echo $query." is executed\n";
+			else echo $query." is NOT executed\n";
+		}
 	}
 }

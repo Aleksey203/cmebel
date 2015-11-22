@@ -5,8 +5,10 @@ $(document).ready(function(){
     var doc = $(this);
 
     doc.on('click', '#new_order',function(){
-        $('#new_order_input').val(1);
-        $(this).parents('form').submit();
+        if (confirm("Вы уверены, что хотите сохранить в новой версии?")) {
+            $('#new_order_input').val(1);
+            $(this).parents('form').submit();
+        }
         return false;
     });
 
