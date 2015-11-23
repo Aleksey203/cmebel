@@ -46,7 +46,7 @@ $(document).ready(function(){
     var urlAddProduct = '/index.php?r=orders/addproduct',
         order_id = parseInt($('#add_product_box').attr('data-order-id')),
         product_id = parseInt($('select[name="product_id"]').val()),
-        product_quantity = parseInt($('select[name="product_quantity"]').val());
+        product_quantity = parseInt($('input[name="product_quantity"]').val());
     $.ajax({
         url: urlAddProduct,
         type: 'GET',

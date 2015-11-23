@@ -10,7 +10,7 @@ for ($i = 1; $i <= 15; $i++) {
 	<td><?=$product->name;?></td>
 	<td class="price"><?=$product->price;?></td>
 	<td><?php
-		echo Html::dropDownList('Orders[products][new]['.$product->id.'][quantity]',$get['product_quantity'],$values,['class'=>'form-control product-quantity']);
+		echo Html::input('text','Orders[products][new]['.$product->id.'][quantity]',$get['product_quantity'],['class'=>'form-control product-quantity']);
 		?></td>
 	<td class="product-cost"><?=($product->price*$get['product_quantity']);?></td>
 	<td>

@@ -28,7 +28,8 @@ if (isset($orderProducts)) {
 			<td><?=$orderProduct->product->name;?></td>
 			<td class="price"><?=$orderProduct->product->price;?></td>
 			<td><?php
-				echo Html::dropDownList('Orders[products]['.$orderProduct->id.']['.$orderProduct->product_id.'][quantity]',$orderProduct->quantity,$values,['class'=>'form-control product-quantity']);
+				echo Html::input('text','Orders[products]['.$orderProduct->id.']['.$orderProduct->product_id.'][quantity]',
+					$orderProduct->quantity,['class'=>'form-control product-quantity']);
 				?></td>
 			<td class="product-cost"><?=($orderProduct->product->price*$orderProduct->quantity);?></td>
 			<td>
@@ -72,7 +73,7 @@ if (isset($orderProducts)) {
 					]);
 					?></td>
 				<td><?php
-					echo Html::dropDownList('product_quantity',1,$values,['class'=>'form-control product-quantity']);
+					echo Html::input('text','product_quantity',1,['class'=>'form-control product-quantity']);
 					?></td>
 			</tr>
 			</tbody>
