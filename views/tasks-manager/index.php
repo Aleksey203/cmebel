@@ -75,7 +75,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 ],
                 'urlCreator' => function ($action, $model, $key) {
                         if ($action === 'viewOrder') {
-                            $url = Url::toRoute(['order', 'id' => $model->orderData->id]);
+                            //$url = Url::toRoute(['order', 'id' => $model->orderData->id]);
+                            $url = Url::to(['orders/update', 'id' => $model->orderData->id]);
                             return $url;
                         }
                         elseif($action === 'update') {
