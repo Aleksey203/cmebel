@@ -20,12 +20,39 @@ use  yii\db\Query;
 class OpencartController extends Controller
 {
 
+
     public function actionIndex($message = 'hello world from module')
     {
         echo $message . "\n";
     }
 
     //import orders from shop into CRM
+    public function actionClosed() {
+	    $closed = 0;
+	    $closedId = 5;
+	    $query = "
+	        SELECT order_opencart_id
+	        FROM orders
+	        WHERE status_id=$closedId AND last_version=1
+	        AND TO_DAYS(NOW()) - TO_DAYS(date_added) <= 366
+	        GROUP BY order_opencart_id"; //echo $query;
+
+	    $closedOrders = \Yii::$app->db->createCommand($query)
+		    ->queryAll();
+
+	    echo 'Is finded closed orders:'.count($closedOrders)."\n";
+
+	    foreach ($closedOrders as $k => $closedOrder) {
+		    echo 'Order opencart ID:'.$closedOrder['order_opencart_id']."\n";
+		    \Yii::$app->dbOpencart->createCommand()
+			    ->update('oc_order', ['order_status_id' => $closedId], 'order_id ='.$closedOrder['order_opencart_id'])
+			    ->execute();
+		    $closed++;
+	    }
+
+	    echo 'Closed orders to opencart:'.$closed."\n";
+    }
+
     public function actionOrders()
     {
 	    $query = "
