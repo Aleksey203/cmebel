@@ -170,25 +170,32 @@ class OpencartController extends Controller
 
 		$shopCategoriesOpencart = \Yii::$app->dbOpencart->createCommand($query)
 			->queryAll();
-
-		foreach ($shopCategoriesOpencart as $k => $categoryOpencart) {
-			foreach ($shopCategories as $category) {
-				if ($category['opencart_id']==$categoryOpencart['category_id']) unset($shopCategoriesOpencart[$k]);
-			}
-		}
-		/*echo '<pre>';
-		print_r($shopCategoriesOpencart);
-		echo '</pre>';*/
 		$insertedC=0;
+		$updatedC=0;
 		foreach ($shopCategoriesOpencart as $k => $categoryOpencart) {
-			if (\Yii::$app->db->createCommand()->insert('shop_categories', [
-				'opencart_id' => $categoryOpencart['category_id'],
-				'name' => $categoryOpencart['name'],
-				'parent_id' => $categoryOpencart['parent_id'],
-				'status' => $categoryOpencart['status']
-			])->execute()) $insertedC++;
-			if ($categoryOpencart['parent_id']>0)
-				$insertedCategories[$categoryOpencart['category_id']] = $categoryOpencart['parent_id'];
+			$isNewCategory = true;
+			foreach ($shopCategories as $category) {
+				if ($category['opencart_id']==$categoryOpencart['category_id']) {
+					$isNewCategory = false;
+					if (\Yii::$app->db->createCommand()->update('shop_categories', [
+						'name' => $categoryOpencart['name'],
+						'parent_id' => $categoryOpencart['parent_id'],
+						'status' => $categoryOpencart['status']
+					],'opencart_id = '.$categoryOpencart['category_id'])->execute()) $updatedC++;
+					if ($categoryOpencart['parent_id']>0)
+						$insertedCategories[$categoryOpencart['category_id']] = $categoryOpencart['parent_id'];
+				}
+			}
+			if ($isNewCategory) {
+				if (\Yii::$app->db->createCommand()->insert('shop_categories', [
+					'opencart_id' => $categoryOpencart['category_id'],
+					'name' => $categoryOpencart['name'],
+					'parent_id' => $categoryOpencart['parent_id'],
+					'status' => $categoryOpencart['status']
+				])->execute()) $insertedC++;
+				if ($categoryOpencart['parent_id']>0)
+					$insertedCategories[$categoryOpencart['category_id']] = $categoryOpencart['parent_id'];
+			}
 		}
 
 		if (isset($insertedCategories)) {
@@ -205,6 +212,7 @@ class OpencartController extends Controller
 		    }
 
 		}
+		echo "Updated categories: $updatedC\n";
 		echo "Inserted new categories: $insertedC\n";
 
 
