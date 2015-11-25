@@ -209,7 +209,7 @@ class OpencartController extends Controller
 
 
 		$query = "
-	        SELECT opencart_id
+	        SELECT id, opencart_id, image
 	        FROM shop_products
 	        "; //echo $query;
 
@@ -223,59 +223,83 @@ class OpencartController extends Controller
 	        LEFT JOIN oc_product_to_category pc ON pc.product_id=p.product_id
 	        WHERE pd.language_id=1
 	        GROUP BY p.product_id
-	        ORDER BY pc.category_id
+	        ORDER BY p.product_id, pc.category_id
 	        "; //echo $query;
 
 		$shopProductsOpencart = \Yii::$app->dbOpencart->createCommand($query)
 			->queryAll();
 
-		foreach ($shopProductsOpencart as $k => $productOpencart) {
-			foreach ($shopProducts as $product) {
-				if ($product['opencart_id']==$productOpencart['product_id']) unset($shopProductsOpencart[$k]);
-			}
-		}
 		$insertedP=0;
+		$updatedP=0;
 		foreach ($shopProductsOpencart as $k => $productOpencart) {
+			$isNewProduct = true;
 			$query = "
-		        SELECT id
-		        FROM shop_categories
-		        WHERE opencart_id='".intval($productOpencart['category_id'])."'
-		        "; //echo $query;
+					        SELECT id
+					        FROM shop_categories
+					        WHERE opencart_id='".intval($productOpencart['category_id'])."'
+					        "; //echo $query;
 			$categoryId = \Yii::$app->db->createCommand($query)->queryScalar();
 
 			if (!isset($productOpencart['name']) OR $productOpencart['name']==null OR strlen($productOpencart['name'])>0==false)
 				$productOpencart['name'] = $productOpencart['model'];
 			$array = explode('/',$productOpencart['image']);
-			echo '<pre>';
-			print_r($array);
-			echo '</pre>';
 			$image = array_pop($array);
-			\Yii::$app->db->createCommand()->insert('shop_products', [
-				'opencart_id' => $productOpencart['product_id'],
-				'name' => $productOpencart['name'],
-				'model' => $productOpencart['model'],
-				'category_id' => $categoryId,
-				'price' => $productOpencart['price'],
-				'quantity' => $productOpencart['quantity'],
-				'date_added' => $productOpencart['date_added'],
-				'date_modified' => $productOpencart['date_modified'],
-				'image' => $image,
-				'status' => $productOpencart['status']
-			])->execute();
-			if ($image) {
-				$query = "
-			        SELECT id
-			        FROM shop_products
-			        ORDER BY id DESC LIMIT 1
-			        "; //echo $query;
-				$productId = \Yii::$app->db->createCommand($query)->queryScalar();
-				$pathOpencart = \Yii::$app->params['urlOpencart'];
-				$path = \Yii::getAlias('@app/web/files/shop_products').'/'.$productId.'/';
-				if (!is_dir($path)) mkdir($path);
-				copy($pathOpencart.'/image/'.$productOpencart['image'], $path.$image);
+			foreach ($shopProducts as $product) {
+
+				if ($product['opencart_id']==$productOpencart['product_id']) {
+					$isNewProduct = false;
+					\Yii::$app->db->createCommand()->update('shop_products', [
+						'name' => $productOpencart['name'],
+						'model' => $productOpencart['model'],
+						'category_id' => $categoryId,
+						'price' => $productOpencart['price'],
+						'quantity' => $productOpencart['quantity'],
+						'date_added' => $productOpencart['date_added'],
+						'date_modified' => $productOpencart['date_modified'],
+						'image' => $image,
+						'status' => $productOpencart['status']
+					], 'opencart_id = '.$productOpencart['product_id'])->execute();
+
+					if ($image!=$product['image']) {
+						$pathOpencart = \Yii::$app->params['urlOpencart'];
+						$path = \Yii::getAlias('@app/web/files/shop_products').'/'.$product['id'].'/';
+						if (!is_dir($path)) mkdir($path);
+						if (is_file($path.$product['image'])) unlink($path.$product['image']);
+						copy($pathOpencart.'/image/'.$productOpencart['image'], $path.$image);
+					}
+					$updatedP++;
+				}
 			}
-			$insertedP++;
+			if ($isNewProduct) {
+				\Yii::$app->db->createCommand()->insert('shop_products', [
+					'opencart_id' => $productOpencart['product_id'],
+					'name' => $productOpencart['name'],
+					'model' => $productOpencart['model'],
+					'category_id' => $categoryId,
+					'price' => $productOpencart['price'],
+					'quantity' => $productOpencart['quantity'],
+					'date_added' => $productOpencart['date_added'],
+					'date_modified' => $productOpencart['date_modified'],
+					'image' => $image,
+					'status' => $productOpencart['status']
+				])->execute();
+				if ($image) {
+					$query = "
+						        SELECT id
+						        FROM shop_products
+						        ORDER BY id DESC LIMIT 1
+						        "; //echo $query;
+					$productId = \Yii::$app->db->createCommand($query)->queryScalar();
+					$pathOpencart = \Yii::$app->params['urlOpencart'];
+					$path = \Yii::getAlias('@app/web/files/shop_products').'/'.$productId.'/';
+					if (!is_dir($path)) mkdir($path);
+					copy($pathOpencart.'/image/'.$productOpencart['image'], $path.$image);
+				}
+				$insertedP++;
+			}
 		}
+
+		echo "Updated products: $updatedP\n";
 		echo "Inserted new products: $insertedP\n";
 	}
 
