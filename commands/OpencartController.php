@@ -8,11 +8,25 @@
 namespace app\commands;
 
 use yii\console\Controller;
+use yii\helpers\ArrayHelper;
+use  yii\db\Query;
+
+//call commands sequence:
+//yii opencart/shop         get nomenclatures
+//yii opencart/statuses     get statuses order
+//yii opencart/order        get orders, clients
 
 
 class OpencartController extends Controller
 {
 
+
+    public function actionIndex($message = 'hello world from module')
+    {
+        echo $message . "\n";
+    }
+
+    //import orders from shop into CRM
     public function actionClosed() {
 	    $closed = 0;
 	    $closedId = 5;
@@ -38,6 +52,7 @@ class OpencartController extends Controller
 
 	    echo 'Closed orders to opencart:'.$closed."\n";
     }
+
     public function actionOrders()
     {
 	    $query = "
@@ -49,7 +64,7 @@ class OpencartController extends Controller
 		    ->queryAll();
 
 	    $query = "
-	        SELECT order_opencart_id
+	        SELECT order_opencart_id, date_added, date_modified
 	        FROM orders
 	        "; //echo $query;
 
@@ -57,100 +72,377 @@ class OpencartController extends Controller
 		    ->queryAll();
 
 	    $query = "
-	        SELECT order_id, firstname, lastname, email, telephone, total, date_added, date_modified
+	        SELECT order_id, firstname, lastname, email, telephone, total, date_added, date_modified, order_status_id
 	        FROM oc_order
 	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= ".\Yii::$app->params['orderDays']; //echo $query;
 
 	    $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
 		    ->queryAll();
+
 		if (!isset($ordersOpencart[0])) {
 		    echo 'No orders in opencart in last '.\Yii::$app->params['orderDays'].' days';
 			die();
 		}
-	    $newClients = array();
+
+
 	    foreach ($ordersOpencart as $k => $orderOpencart) {
-		    foreach ($orders as $order) {
-			    if ($order['order_opencart_id']==$orderOpencart['order_id']) unset($ordersOpencart[$k]);
-		    }
-		    $clientOpencart['name'] = trim($orderOpencart['lastname']).' '.trim($orderOpencart['firstname']);
-		    $newClients[$k] = array('name' => $clientOpencart['name'], 'phone'=>trim($orderOpencart['telephone']), 'email'=>trim($orderOpencart['email']));
-	    }
 
-        foreach ($newClients as $k=>$newClient) {
-	        foreach ($clients as $client) {
-			    if ($client['name']==$newClient['name'] OR ($client['email']==$newClient['email'] AND $client['phone']==$newClient['phone']))
-				    unset($newClients[$k]);
-		    }
-	    }
+            echo '<pre>';
+            print_r($orderOpencart);
+            echo '</pre>';
 
-	    echo '<pre>';
-	    print_r($newClients);
-	    echo '</pre>';
-	    foreach ($newClients as $k => $newClient) {
-		    \Yii::$app->db->createCommand()->insert('clients', $newClient)->execute();
-	    }
+            $query = "
+	        SELECT id,order_opencart_id, date_added, date_modified, client_id
+	        FROM orders
+	        WHERE order_opencart_id=".$orderOpencart['order_id']."
+            ORDER BY version LIMIT 1";
 
-	    echo '$ordersOpencart = <pre>';
-	    print_r($ordersOpencart);
-	    echo '</pre>';
-	    foreach ($ordersOpencart as $k => $orderOpencart) {
-		    $query = "
-		        SELECT id
-		        FROM clients
-		        WHERE name='".trim($orderOpencart['lastname']).' '.trim($orderOpencart['firstname'])."'
-		        AND email='".trim($orderOpencart['email'])."'
-		        AND phone='".trim($orderOpencart['telephone'])."'
-		        "; //echo $query;
-		    $clientId = \Yii::$app->db->createCommand($query)->queryScalar();
+            $orderCRM = \Yii::$app->db->createCommand($query)
+                ->queryOne();
 
-		    \Yii::$app->db->createCommand()->insert('orders', [
-			    'order_opencart_id' => $orderOpencart['order_id'],
-			    'client_id' => intval($clientId),
-			    'total' => $orderOpencart['total'],
-			    'date_added' => $orderOpencart['date_added'],
-			    'date_modified' => $orderOpencart['date_modified']
-		    ])->execute();
-	    }
+            echo '<pre>';
+            print_r($orderCRM);
+            echo '</pre>';
 
-	    $query = "
-	        SELECT op.*
-	        FROM oc_order_product op
-	        LEFT JOIN oc_order o ON o.order_id=op.order_id
-	        WHERE TO_DAYS(NOW()) - TO_DAYS(o.date_added) <= 70
-	        "; //echo $query;
+            $clientData = [
+                'name'=>trim($orderOpencart['lastname']).' '.trim($orderOpencart['firstname']),
+                'phone'=>trim($orderOpencart['telephone']),
+                'email'=>trim($orderOpencart['email'])
+            ];
 
-	    $ordersProductOpencart = \Yii::$app->dbOpencart->createCommand($query)
-		    ->queryAll();
+            if($orderCRM) {
+                if((strtotime($orderCRM['date_modified']) <= strtotime($orderOpencart['date_modified']))) {
+                    //update order
+                    \Yii::$app->db->createCommand()->update(
+                        'orders',
+                        [
+                            'total' => $orderOpencart['total'],
+                            'date_added' => $orderOpencart['date_added'],
+                            'date_modified' => $orderOpencart['date_modified'],
+                            'status_id'=>$orderOpencart['order_status_id']
+                        ],
+                        "id=:id",
+                        [':id'=>$orderCRM['id']]
+                    )->execute();
 
-	    echo '<pre>';
-	    print_r($ordersProductOpencart);
-	    echo '</pre>';
-	    foreach ($ordersProductOpencart as $k => $orderProductOpencart) {
-		    $query = "
-		        SELECT id
-		        FROM orders
-		        WHERE order_opencart_id='".trim($orderProductOpencart['order_id'])."'
-		        AND version=1
-		        "; //echo $query;
-		    $orderId = \Yii::$app->db->createCommand($query)->queryScalar();
+                    //update client
+                    \Yii::$app->db->createCommand()->update(
+                        'clients',
+                        $clientData,
+                        "id=:id",
+                        [':id'=>$orderCRM['client_id']]
+                    )->execute();
+                }
+                $orderCRMId = $orderCRM['id'];
+            } else {
 
-		    $query = "
-		        SELECT id
-		        FROM shop_products
-		        WHERE opencart_id='".trim($orderProductOpencart['product_id'])."'
-		        "; //echo $query;
-		    $productId = \Yii::$app->db->createCommand($query)->queryScalar();
+                $clientId = (new Query())
+                    ->select('id')
+                    ->from('clients')
+                    ->where(
+                        'name=:name AND phone=:phone AND email=:email',
+                        [':name'=>$clientData['name'],':phone'=>$clientData['phone'],':email'=>$clientData['email']]
+                    )
+                    ->scalar();
 
-		    \Yii::$app->db->createCommand()->insert('order_product', [
-			    'order_id' => intval($orderId),
-			    'product_id' => intval($productId),
-			    'quantity' => $orderProductOpencart['quantity']
-		    ])->execute();
+                if(!$clientId) {
+                    //insert new client
+                    \Yii::$app->db->createCommand()->insert('clients', $clientData)->execute();
+                    //\Yii::$app->db->createCommand()->update('clients', $newClient,"id=:id",array(':id'=>$orderWithClientFromCRM['client_id']))->execute();
+                    $clientId = \Yii::$app->db->getLastInsertID();
+                }
+
+                //insert new order
+                \Yii::$app->db->createCommand()->insert('orders', [
+                    'order_opencart_id' => $orderOpencart['order_id'],
+                    'client_id' => intval($clientId),
+                    'total' => $orderOpencart['total'],
+                    'date_added' => $orderOpencart['date_added'],
+                    'date_modified' => $orderOpencart['date_modified'],
+                    'status_id'=>$orderOpencart['order_status_id']
+                ])->execute();
+
+                $orderCRMId = \Yii::$app->db->getLastInsertID();
+            }
+
+            //update data about nomenclatures of order
+
+	        $query = "
+                SELECT op.*
+                FROM oc_order_product op
+                INNER JOIN oc_order o ON o.order_id=op.order_id
+                WHERE o.order_id =".$orderOpencart['order_id'];
+
+	        $ordersProductOpencart = \Yii::$app->dbOpencart->createCommand($query)
+		        ->queryAll();
+
+            $findedProductInOrderCRM  = [];
+            foreach ($ordersProductOpencart as $k => $orderProductOpencart) {
+
+                $query = "
+                    SELECT id
+                    FROM shop_products
+                    WHERE opencart_id='".trim($orderProductOpencart['product_id'])."'
+                    "; //echo $query;
+
+                $productId = \Yii::$app->db->createCommand($query)->queryScalar();
+
+                $productInOrderCRM = (new Query())
+                    ->select('id')
+                    ->from('order_product')
+                    ->where(
+                        'order_id=:order_id AND product_id=:product_id',
+                        [':order_id'=>$orderCRMId,':product_id'=>$productId]
+                    )
+                    ->scalar();
+
+                if($productInOrderCRM) {
+
+                    \Yii::$app->db->createCommand()->update('order_product', [
+                            'quantity' => $orderProductOpencart['quantity']
+                        ], 'order_id=:order_id AND product_id=:product_id',
+                        [
+                            'order_id' => intval($orderCRMId),
+                            'product_id' => intval($productId),
+                        ]
+                    )->execute();
+                    $findedProductInOrderCRM[] = $productId;//$productInOrderCRM;
+
+                } else {
+
+                    \Yii::$app->db->createCommand()->insert('order_product', [
+                        'order_id' => $orderCRMId,
+                        'product_id' => intval($productId),
+                        'quantity' => $orderProductOpencart['quantity']
+                    ])->execute();
+
+                    $findedProductInOrderCRM[] = $productId;//\Yii::$app->db->getLastInsertID();
+
+                }
+
+            }
+
+            \Yii::$app->db
+                ->createCommand()
+                ->delete('order_product',['and','order_id='.$orderCRMId,['not in','product_id',$findedProductInOrderCRM]])
+                ->execute();
+
 	    }
 
 	    echo "\n";
     }
 
+
+//    public function actionOrders()
+//    {
+//        $query = "
+//	        SELECT *
+//	        FROM clients
+//	        "; //echo $query;
+//
+//        $clients = \Yii::$app->db->createCommand($query)
+//            ->queryAll();
+//
+//        $query = "
+//	        SELECT order_opencart_id, date_added, date_modified
+//	        FROM orders
+//	        "; //echo $query;
+//
+//        $orders = \Yii::$app->db->createCommand($query)
+//            ->queryAll();
+//
+//        $query = "
+//	        SELECT order_id, firstname, lastname, email, telephone, total, date_added, date_modified, order_status_id
+//	        FROM oc_order
+//	        WHERE TO_DAYS(NOW()) - TO_DAYS(date_added) <= ".\Yii::$app->params['orderDays']; //echo $query;
+//
+//        $ordersOpencart = \Yii::$app->dbOpencart->createCommand($query)
+//            ->queryAll();
+//        if (!isset($ordersOpencart[0])) {
+//            echo 'No orders in opencart in last '.\Yii::$app->params['orderDays'].' days';
+//            die();
+//        }
+//        $newClients = array();
+//        foreach ($ordersOpencart as $k => $orderOpencart) {
+//            foreach ($orders as $order) {
+//                if ($order['order_opencart_id']==$orderOpencart['order_id'] && (strtotime($order['date_modified']) >= strtotime($orderOpencart['date_modified']))) {
+//                    unset($ordersOpencart[$k]);
+//                }
+//            }
+//            $clientOpencart['name'] = trim($orderOpencart['lastname']).' '.trim($orderOpencart['firstname']);
+//            $newClients[$k] = array('name' => $clientOpencart['name'], 'phone'=>trim($orderOpencart['telephone']), 'email'=>trim($orderOpencart['email']),
+//                'order_opencart_id'=>$orderOpencart['order_id']);
+//        }
+//
+////        foreach ($newClients as $k=>$newClient) {
+////	        foreach ($clients as $client) {
+////			    if ($client['name']==$newClient['name'] && ($client['email']==$newClient['email'] && $client['phone']==$newClient['phone']))
+////				    unset($newClients[$k]);
+////		    }
+////	    }
+//
+//        echo '<pre>';
+//        print_r($newClients);
+//        echo '</pre>';
+//        foreach ($newClients as $k => $newClient) {
+//
+//            $queryGetOrderWithClientFromCRM = "
+//                SELECT o.*,c.id as client_id
+//                FROM orders o
+//                LEFT JOIN clients c ON o.client_id=c.id
+//                WHERE o.order_opencart_id=".$newClient['order_opencart_id']."
+//	        ";
+//
+//            $orderWithClientFromCRM = \Yii::$app->db->createCommand($queryGetOrderWithClientFromCRM)->queryOne();
+//
+//            unset($newClient['order_opencart_id']);
+//
+//            if($orderWithClientFromCRM) {
+//                \Yii::$app->db->createCommand()->update('clients', $newClient,"id=:id",array(':id'=>$orderWithClientFromCRM['client_id']))->execute();
+//            } else {
+//                \Yii::$app->db->createCommand()->insert('clients', $newClient)->execute();
+//            }
+//
+//        }
+//
+//        echo '$ordersOpencart = <pre>';
+//        print_r($ordersOpencart);
+//        echo '</pre>';
+//        foreach ($ordersOpencart as $k => $orderOpencart) {
+//            $query = "
+//		        SELECT id
+//		        FROM clients
+//		        WHERE name='".trim($orderOpencart['lastname']).' '.trim($orderOpencart['firstname'])."'
+//		        AND email='".trim($orderOpencart['email'])."'
+//		        AND phone='".trim($orderOpencart['telephone'])."'
+//		        "; //echo $query;
+//            $clientId = \Yii::$app->db->createCommand($query)->queryScalar();
+//
+//            $queryExistingOrderInCRM = "SELECT id
+//            FROM orders o
+//            WHERE o.order_opencart_id=".trim($orderOpencart['order_id']);
+//
+//            $existingOrderInCRM = \Yii::$app->db->createCommand($queryExistingOrderInCRM)->queryScalar();
+//
+//            if($existingOrderInCRM) {
+//                \Yii::$app->db->createCommand()->update('orders', [
+//                        'total' => $orderOpencart['total'],
+//                        'status_id'=>$orderOpencart['order_status_id']
+//                    ], "id=:id",
+//                    [":id"=>intval($orderOpencart['order_id'])])->execute();
+//            } else {
+//                \Yii::$app->db->createCommand()->insert('orders', [
+//                    'order_opencart_id' => $orderOpencart['order_id'],
+//                    'client_id' => intval($clientId),
+//                    'total' => $orderOpencart['total'],
+//                    'date_added' => $orderOpencart['date_added'],
+//                    'date_modified' => $orderOpencart['date_modified'],
+//                    'status_id'=>$orderOpencart['order_status_id']
+//                ])->execute();
+//            }
+//
+//
+//        }
+//
+//        $query = "
+//	        SELECT op.*
+//	        FROM oc_order_product op
+//	        LEFT JOIN oc_order o ON o.order_id=op.order_id
+//	        WHERE TO_DAYS(NOW()) - TO_DAYS(o.date_added) <= 70
+//	        "; //echo $query;
+//
+//        $ordersProductOpencart = \Yii::$app->dbOpencart->createCommand($query)
+//            ->queryAll();
+//
+//        $queryOrdersProductCRM =  "SELECT op.*
+//            FROM shop_products sp
+//            INNER JOIN order_product op ON op.product_id = sp.id
+//            INNER JOIN (SELECT   id, version, order_opencart_id FROM orders o
+//            GROUP BY order_opencart_id
+//            ORDER BY o.version) o ON o.id = op.order_id
+//        ";
+//
+//        $ordersProductCRM = \Yii::$app->db->createCommand($queryOrdersProductCRM) ->queryAll();
+//
+//        echo '<pre>';
+//        print_r($ordersProductOpencart);
+//        echo '</pre>';
+//
+//        foreach($ordersProductCRM as $currentOrderProductFromCRM) {
+//
+//            foreach ($ordersProductOpencart as $k => $orderProductOpencart) {
+//
+////            $queryGetIdLastVersionOfOrder = "
+////                SELECT id FROM orders o
+////                WHERE o.order_opencart_id = ".trim($orderProductOpencart['order_id'])."
+////                ORDER BY o.version";
+////            $idLastVersionOfOrder = \Yii::$app->db->createCommand($queryGetIdLastVersionOfOrder)
+////                ->queryScalar();
+////
+////            $queryOrdersProductCRM = "
+////                    SELECT op.*
+////                    FROM shop_products sp
+////                    INNER JOIN order_product op ON op.product_id = sp.id
+////                    INNER JOIN orders o ON o.id = op.order_id
+////                    WHERE o.id =  ".$idLastVersionOfOrder." AND sp.opencart_id=".$orderProductOpencart['product_id'];
+////            $ordersProductCRM = \Yii::$app->db->createCommand($queryOrdersProductCRM) ->queryAll();//ArrayHelper::map(, 'opencart_id', 'id');
+//
+//                $query = "
+//		        SELECT id
+//		        FROM orders
+//		        WHERE order_opencart_id='".trim($orderProductOpencart['order_id'])."'
+//		        ORDER BY version
+//		        "; //echo $query;
+//                $orderId = \Yii::$app->db->createCommand($query)->queryScalar();
+//
+//                $query = "
+//		        SELECT id
+//		        FROM shop_products
+//		        WHERE opencart_id='".trim($orderProductOpencart['product_id'])."'
+//		        "; //echo $query;
+//                $productId = \Yii::$app->db->createCommand($query)->queryScalar();
+//
+////            if(is_array($ordersProductCRM) && count($ordersProductCRM)>0) {
+//
+//                $queryCountRowsOrderProduct = "
+//		        SELECT COUNT(id)
+//		        FROM order_product
+//		        WHERE order_id=".intval($orderId)." AND product_id=".intval($productId);
+//
+//                $countRowsOrderProduct = \Yii::$app->db->createCommand($queryCountRowsOrderProduct)->queryScalar();
+//
+//                if(intval($countRowsOrderProduct) > 0) {
+//                    \Yii::$app->db->createCommand()->update('order_product', [
+//                            'quantity' => $orderProductOpencart['quantity']
+//                        ], 'order_id=:order_id AND product_id=:product_id',
+//                        [
+//                            'order_id' => intval($orderId),
+//                            'product_id' => intval($productId),
+//                        ]
+//                    )->execute();
+//                } else {
+//                    \Yii::$app->db->createCommand()->insert('order_product', [
+//                        'order_id' => intval($orderId),
+//                        'product_id' => intval($productId),
+//                        'quantity' => $orderProductOpencart['quantity']
+//                    ])->execute();
+//                }
+//
+////            } else {
+////                \Yii::$app->db->createCommand()->delete('order_product',"order_id=:order_id AND product_id=:product_id",[":order_id"=>intval($orderId),':product_id'=>intval($productId)]);
+////            }
+//
+//            }
+//
+//        }
+//
+//
+//
+//
+//        echo "\n";
+//    }
+//
+    //import orders from shop into CRM
 	public function actionShop()
 	{
 		$query = "
@@ -311,6 +603,7 @@ class OpencartController extends Controller
 		echo "Inserted new products: $insertedP\n";
 	}
 
+    //export status order from crm into shop
 	public function actionStatuses() {
 		$query = "
 	        SELECT order_status_id id, name
@@ -338,7 +631,8 @@ class OpencartController extends Controller
 		}
 		echo "Inserted new statuses: $insertedS\n";
 	}
-	public function actionClear()
+
+    public function actionClear()
 	{
 		$queries = [
 			'TRUNCATE `orders`',
@@ -348,6 +642,7 @@ class OpencartController extends Controller
 			'TRUNCATE `shop_products`',
 			'TRUNCATE `tasks`',
 			'TRUNCATE `task_files`',
+            'TRUNCATE `clients`',
 		];
 		foreach ($queries as $query) {
 			if (\Yii::$app->db->createCommand($query)->execute()==0)
@@ -355,4 +650,5 @@ class OpencartController extends Controller
 			else echo $query." is NOT executed\n";
 		}
 	}
+
 }
