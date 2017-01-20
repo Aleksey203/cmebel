@@ -16,9 +16,6 @@ use \yii\helpers\ArrayHelper;
     <?php $form = ActiveForm::begin(); ?>
 
     <?=
-//        $form->field($model, 'user_id', [
-//            'template' => "{label}:\n".User::getNameById($model->user_id)."\n{hint}\n{error}"] )
-
         $form->field($model, 'user_id')->dropDownList(ArrayHelper::map(\app\models\User::find()->all(), 'id', 'username'),
             [
                 'prompt'=>'Выберите исполнителя',

@@ -16,8 +16,6 @@ use yii\helpers\ArrayHelper;
         'method' => 'get',
     ]); ?>
 
-<!--    --><?//= $form->field($model, 'id') ?>
-
     <div class="row">
         <div class="col-xs-3">
             <?= $form->field($model, 'user_id')->dropDownList(ArrayHelper::map(\app\models\User::find()->all(), 'id', 'username'),['prompt'=>'Выберите исполнителя',]) ?>
@@ -32,7 +30,6 @@ use yii\helpers\ArrayHelper;
         <div class="col-xs-3">
             <div class="form-group" style="margin-top: 25px;">
                 <?= Html::submitButton('Поиск', ['class' => 'btn btn-primary']) ?>
-<!--                        --><?//= Html::resetButton('Сбросить', ['class' => 'btn btn-default']) ?>
             </div>
 
 
