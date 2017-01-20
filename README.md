@@ -1,101 +1,111 @@
-Yii 2 Basic Project Template
-============================
+CRM для мебельного интернет-магазина
+====================================
 
-Yii 2 Basic Project Template is a skeleton [Yii 2](http://www.yiiframework.com/) application best for
-rapidly creating small projects.
+ТЗ на разработку Веб-приложения - CRM1.0
 
-The template contains the basic features including user login/logout and a contact page.
-It includes all commonly used configurations that would allow you to focus on adding new
-features to your application.
+Роли в системе: Администратор, Менеджер.
 
-[![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-app-basic/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-app-basic)
-[![Total Downloads](https://poser.pugx.org/yiisoft/yii2-app-basic/downloads.png)](https://packagist.org/packages/yiisoft/yii2-app-basic)
-[![Build Status](https://travis-ci.org/yiisoft/yii2-app-basic.svg?branch=master)](https://travis-ci.org/yiisoft/yii2-app-basic)
+Роль Администратор.
 
-DIRECTORY STRUCTURE
--------------------
+Показывать меню сверху со следующими пунктами: Справочники - Книги, Пользователи; Отчеты
 
-      assets/             contains assets definition
-      commands/           contains console commands (controllers)
-      config/             contains application configurations
-      controllers/        contains Web controller classes
-      mail/               contains view files for e-mails
-      models/             contains model classes
-      runtime/            contains files generated during runtime
-      tests/              contains various tests for the basic application
-      vendor/             contains dependent 3rd-party packages
-      views/              contains view files for the Web application
-      web/                contains the entry script and Web resources
+1.Страница Пользователи.
+Блок кнопок: Добавить
+
+Таблица со столбцами: логин, роль, активен, колонка-кнопка Редактировать.
+
+2.Страница Пользователь.
+
+Поля для ввода: логин (email), пароль, роль, активен.
 
 
+3.Страница Книги.
+Форма фильтрации с поля: фраза - искать по вхождению(фразе) в title книги.
 
-REQUIREMENTS
-------------
+Блок кнопок: Добавиь.
 
-The minimum requirement by this project template that your Web server supports PHP 5.4.0.
+Таблица со столбцами: title, asin(уник. значение), ссылка на страницу в amazon, рейтинг(число), ревью(число), ранк(число), колонка-кнопка Редактировать.
 
+Т.к. рейтинг, ревью, ранк по книге хранятся с разными датами, то надо выводить в таблице самые последние значения.
 
-INSTALLATION
-------------
+4.Страница Книга.
+Поля: title, asin (не редактируемое поле), дата публикации(submitted on), ссылка на страницу в amazon, рейтинг(число), ревью(число), ранк(число).
 
-### Install from an Archive File
+Т.к. рейтинг, ревью, ранк по книге хранятся с разными датами, то надо выводить в таблице самые последние значения.
 
-Extract the archive file downloaded from [yiiframework.com](http://www.yiiframework.com/download/) to
-a directory named `basic` that is directly under the Web root.
+5.Страница Авторы.
+Форма фильтрации с поля: фраза - искать по вхождению(фразе) в имени автора.
+Таблица со столбцами: имя, колонка-кнопка Редактировать.
 
-Set cookie validation key in `config/web.php` file to some random secret string:
+6.Страница Автор.
+Поля: Имя
 
-```php
-'request' => [
-    // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-    'cookieValidationKey' => '<secret random string goes here>',
-],
-```
+7.Страница Marketplaces.
 
-You can then access the application through the following URL:
+Таблица со столбцами: Наименование.
 
-~~~
-http://localhost/basic/web/
-~~~
+8.Страница Валюты.
+Таблица со столбцами: наименование, метка (USD, INR, etc.), коэффициент пересчета по отношению к USD(редактировать прямо в таблице).
+Коэффициент для USD равен 1.
+Первоначально в систему добавить след. валюты: USD, GBR, EURO, JPY, INR, CAD, BRL, MXN, AUD.
 
+9.Страница KDP.
+Таблица со столбцами: Наименование.
 
-### Install via Composer
+10.Страница Raw royalty.
 
-If you do not have [Composer](http://getcomposer.org/), you may install it by following the instructions
-at [getcomposer.org](http://getcomposer.org/doc/00-intro.md#installation-nix).
-
-You can then install this project template using the following command:
-
-~~~
-php composer.phar global require "fxp/composer-asset-plugin:~1.0.0"
-php composer.phar create-project --prefer-dist --stability=dev yiisoft/yii2-app-basic basic
-~~~
-
-Now you should be able to access the application through the following URL, assuming `basic` is the directory
-directly under the Web root.
-
-~~~
-http://localhost/basic/web/
-~~~
+Форма фильтрации, поля: title книги(текст. поле), период - дата начала, дата конца (искать по royalty date) - календарики, KDP (выпадающий список с выбором 0 или 1 элемента) - если не выбрано ничего то поиск по всем KDP
 
 
-CONFIGURATION
--------------
+Таблица со столбцами: KDP(Наименование KDP), Royalty date, title книги, имя автора, ASIN книги, имя рекл. площадки, royalty type, transaction type, units sold (кол-во проданных экземпляров - целое число), Units Refunded (кол-во книг, которые читатели вернули-целое число), Net Units Sold (кол-во купленных, после вычета возвратов), Avg. List Price without tax (это цена), Royalty (число-длина 11,4), Currency (валюта)
 
-### Database
 
-Edit the file `config/db.php` with real data, for example:
+11.Страница Best Sellers Report.
+Форма фильтрации, поля: title книги(искать по фразе), период(начало, конец), аккаунт KDP (выпад. список), кол-во книг(текст. поле, по умолчанию значение 100) - задает лимит элементов в таблице.
+Блок кнопок: Выгрузка в HTML (показывать в новой вкладке как таблицу со всеми данными) Нужно выгружать содержимое таблицы с учетом сортировки и заполненной формы фильтрации.
+Таблица со столбцами: Book(наименование), Author(наименование), ASIN(уник. книги), Amazon Best Sellers Rank(ранк книги, последнее значение), Account Name(KDP наименование), Publication Date(дата публикации книги - submitted on).
 
-```php
-return [
-    'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=yii2basic',
-    'username' => 'root',
-    'password' => '1234',
-    'charset' => 'utf8',
-];
-```
+12.Страница Units Sold Report
+Форма фильтрации, поля: title книги(искать по фразе), период(начало, конец), аккаунт KDP (выпад. список), кол-во книг(текст. поле, по умолчанию значение 100) - задает лимит элементов в таблице.
+Блок кнопок: Выгрузка в HTML (показывать в новой вкладке как таблицу со всеми данными) Нужно выгружать содержимое таблицы с учетом сортировки и заполненной формы фильтрации.
+Таблица со столбцами: Book(наименование), Author(наименование), ASIN(уник. книги), Units Sold(кол-во проданных экземпляров - целое число, Account Name(KDP наименование), Publication Date(дата публикации книги - submitted on).
 
-**NOTE:** Yii won't create the database for you, this has to be done manually before you can access it.
+Ведущими столбцами таблицы являются: Book. Для каждой книжки отдельная строчка.
 
-Also check and edit the other files in the `config/` directory to customize your application.
+
+13.Страница Free Units Report
+Форма фильтрации, поля: title книги(искать по фразе), период(начало, конец), аккаунт KDP (выпад. список).
+Блок кнопок: Выгрузка в HTML (показывать в новой вкладке как таблицу со всеми данными) Нужно выгружать содержимое таблицы с учетом сортировки и заполненной формы фильтрации.
+Таблица со столбцами: Book(наименование), Author(наименование), ASIN(уник. книги), Free Promo Date(Royalty date (столбец А) из эксель импортиуремого файла), Free Promo Units(значение Net Units Sold (столбец J) из импортируемого эксель файла), Account Name(KDP наименование), Publication Date(дата публикации книги - submitted on).
+
+Ведущими столбцами таблицы являются: Free Promo Date, Book. Для каждой промо даты и книжки отдельная строчка.
+
+14.Страница Reviews Report
+Форма фильтрации, поля: поля: title книги(искать по фразе), период(начало, конец), аккаунт KDP (выпад. список), поле “ревью Less-equal then” и формат ввода: число. Это даст системе знать какие значения должны быть в ревью. Поиск по значению ревью.
+Блок кнопок: Выгрузка в HTML (показывать в новой вкладке как таблицу со всеми данными) Нужно выгружать содержимое таблицы с учетом сортировки и заполненной формы фильтрации.
+Таблица со столбцами: Book(наименование), Author(наименование), ASIN(уник. книги), Reviews(ревью книги), Account Name(KDP наименование), Publication Date(дата публикации книги - submitted on).
+
+Ведущими столбцами таблицы являются: Book. Для каждой книжки отдельная строчка.
+
+15.Страница Detailed Sales Report.
+Форма фильтрации, поля: поля: title книги(искать по фразе), период(начало, конец), аккаунт KDP (выпад. список).
+Блок кнопок: Выгрузка в HTML (показывать в новой вкладке как таблицу со всеми данными) Нужно выгружать содержимое таблицы с учетом сортировки и заполненной формы фильтрации.
+Таблица, столбцы: Book(наименование), Author(наименование), ASIN(уник. книги), Amazon Best Sellers Rank(ранк книги, последнее значение), Publication date(дата публикации книги - submitted on), Reviews Number(ревью книги), Customers Rating(рейтинг книги - на странице книги на Амазоне, это рейтинг книги от 1 до 5), Net Paid Units (Units Sold минус Units Refunded), Units Refunded, Free Units (значение Net Units Sold (столбец J) из импортируемого эксель файла), Price (можно взять из столбца K (Avg. List Price without tax) либо из личного кабинета KDP), Royalties Earned (converted in USD) брать значение Royalty и текущую валюту и расчет выводить в USD.
+
+Ведущими столбцами таблицы являются: Book. Для каждой книжки отдельная строчка.
+
+Роль Менеджер.
+
+Все страницы роли администратор, кроме страниц 1,2,16
+
+
+Импорт данных из внешних систем.
+Импортировать нужно из 4 аккаунтов KDP. Для каждого из них будут представлены логин, пароль.
+
+а) По таймеру каждый день в 00:00 заходим в личные кабинеты списка книг и проверяем какие надо добавить и загрузить в систему книгу.
+Есть в базе книга или нет, нужно также загружать данные: ранк, рейтинг, ревью из страницы книги. Для выборки данных по книге нужно на главной амазона в строку поиска вставить ASIN книги.
+
+б) По таймеру каждый день в 00:00 запускать команду на загрузку raw royalty c сайта. Из эксель файла надо выгружать следующие столбцы: Royalty Date, Title, Author Name, ASIN, Marketplace, Royalty Type, Transaction Type, Units sold, Units Refunded, Net Units Sold, Avg. List Price without tax, Avg. File Size (MB), Avg. Offer Price without tax, Avg. Delivery Cost, Royalty, Currency
+
+
+При импорте данных нужно проверять есть ли книга уже в базе на основе уникального ASIN значения книги, также проверять наличие рекламной площадки по ее наименованию, также проверять наличие автора по его имени, если нет то создавать.
